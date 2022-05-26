@@ -1,0 +1,6 @@
+functional-test/*
+
+devTools
+dist
+build
+webpack

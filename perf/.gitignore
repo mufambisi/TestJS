@@ -1,0 +1,8 @@
+out/**
+shared/**
+.gradle
+.metals
+/build/
+/gradle/
+/gradlew
+/gradlew.bat

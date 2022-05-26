@@ -1,0 +1,12 @@
+{
+  "status": 200,
+  "delay": 200,
+  "route": "/my-account/ev/api/status",
+  "responseBody": {
+    "chargeRate": 22,
+    "dailyOptOut": false,
+    "lastUpdated": "22/04/2021",
+    "permOptOut": false,
+    "status": "charging"
+  }
+}

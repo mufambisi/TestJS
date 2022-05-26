@@ -1,0 +1,21 @@
+{
+  "config": {
+    "env": "local",
+    "analyticsDebugToConsole": true,
+    "sumoSendOnErrors": false,
+    "logLevelSumo": "none",
+    "logLevelConsole": "debug",
+    "toggles": {
+      "BatteryWidget": true,
+      "EVWidget": true,
+      "BroadbandWidget": true,
+      "SplitCrmWidget": true,
+      "SplitCrmNoButton": false,
+      "SplitCrmButton": true,
+      "FuelDiscountWidget": true
+    }
+  },
+  "js": [
+    "https://assets.adobedtm.com/launch-ENf697fd9614a3432f8f0fb26672a1149d.min.js"
+  ]
+}

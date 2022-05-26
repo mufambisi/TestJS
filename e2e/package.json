@@ -1,0 +1,32 @@
+{
+  "name": "dashboard-rx-microsite-e2e",
+  "version": "1.0.0",
+  "description": "dashboard-rx e2e tests",
+  "license": "UNLICENSED",
+  "scripts": {
+    "clean": "rm -rf build reports",
+    "format": "origin-scripts format",
+    "format:check": "origin-scripts format --check --no-write",
+    "lint": "origin-scripts lint",
+    "testcafe": "testcafe -c 1 \"$BROWSER --allow-insecure-localhost --ignore-certificate-errors\" ./src/specs --ssl pfx=localhost.pfx - --skip-js-errors -S -s './build/test-results/e2e/tc' -p '${FIXTURE}/${TIME}_${TEST}_${RUN_ID}.png' --reporter spec,test-summary:./build/test-results/e2e/testcafe_report.html",
+    "testcafe:local": "BROWSER=chrome yarn testcafe",
+    "testcafe:docker": "BROWSER=chromium yarn testcafe --video ./build/test-results/e2e/videos --video-options pathPattern='${TEST_ID}.mp4'",
+    "testcafe:ci": "node -r ./scripts/register-ts.js ./scripts/runner.ts",
+    "type:check": "tsc --noEmit",
+    "validate": "origin-scripts validate && yarn format:check && yarn type:check"
+  },
+  "devDependencies": {
+    "@babel/core": "7.13.10",
+    "@babel/polyfill": "^7.0.0",
+    "@babel/register": "7.13.8",
+    "@babel/runtime-corejs2": "^7.1.2",
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "@origin-digital/babel-preset": "1.3.3",
+    "@origin-digital/origin-scripts": "^1.13.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-loader": "8.2.2",
+    "testcafe": "^1.8.1",
+    "testcafe-reporter-test-summary": "^1.0.10",
+    "typescript": "^3.8.2"
+  }
+}

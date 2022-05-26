@@ -1,0 +1,8 @@
+FROM ecrproxy.origindigital-dac.com.au/base/alpine-node12.13-testcafe
+# We need root privileges to install new deps:
+USER root
+
+COPY package.json yarn.lock .yarnrc tsconfig.json localhost.pfx /
+RUN yarn
+
+COPY .testcaferc.json /

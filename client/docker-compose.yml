@@ -1,0 +1,17 @@
+version: '3.6'
+services:
+  dashboardrxmicrosite:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: DashboardRX-micro-site
+    ports:
+      - '1337:1337'
+      - '1338:1338'
+      - '8080:8080'
+    environment:
+      APPLITOOLS_API_KEY: ${APPLITOOLS_APIKEY}
+      BUILD_NUMBER: ${BUILD_NUMBER}
+    volumes:
+      - '$PWD/../:/project'
+    command: yarn --cwd /project/client test:func:docker

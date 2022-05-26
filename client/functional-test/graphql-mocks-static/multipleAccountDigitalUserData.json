@@ -1,0 +1,73 @@
+{
+  "PlainDate": "2021-06-29",
+  "DateTime": "2021-06-29T13:01:38.000Z",
+  "DateTimeInZone": "2021-06-29T13:01:38+10:00",
+  "Timezone": "UTC",
+  "Query": {
+    "viewer": {
+      "kraken": {
+        "accounts": [
+          {
+            "accountNumber": "A-6883E277",
+            "services": [
+              {
+                "__typename": "ElectricityService",
+                "type": "ELECTRICITY",
+                "validFrom": "2020-12-31T14:00:00.000Z",
+                "isActive": true,
+                "property": {
+                  "address": {
+                    "value": "24 West St, Hillsdale, Nsw 2047",
+                    "components": {
+                      "locality": "Hillsdale",
+                      "postcode": "2047"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "accountNumber": "A-6883E278",
+            "services": [
+              {
+                "__typename": "ElectricityService",
+                "type": "ELECTRICITY",
+                "validFrom": "2020-12-31T14:00:00.000Z",
+                "isActive": true,
+                "property": {
+                  "address": {
+                    "value": "24 West St, Hillsdale, Nsw 2047",
+                    "components": {
+                      "locality": "Hillsdale",
+                      "postcode": "2047"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "digital": {
+        "accounts": [
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ1",
+            "type": "KRAKEN",
+            "accountId": "A-6883E277",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ2",
+            "type": "KRAKEN",
+            "accountId": "A-6883E278",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          }
+        ],
+        "features": []
+      }
+    }
+  }
+}

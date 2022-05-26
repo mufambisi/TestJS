@@ -1,0 +1,4 @@
+{
+  "assertionTimeout": 30000,
+  "quarantineMode": true
+}

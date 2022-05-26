@@ -1,0 +1,14 @@
+{
+  "heading": "Looks like all your accounts aren't here",
+  "noButton": {
+    "bodySingular": "We're changing systems and your other account isn't currently available in My Account.",
+    "bodyPlural": "We're changing systems and your other accounts aren't currently available in My Account.",
+    "secondaryBodySingularText": "To manage this account email us at [enquiries@origin.com.au](mailto:enquiries@origin.com.au?subject=Request help with missing accounts&body=My full name: e.g. Jane Rachel Doe%0D%0A%0D%0AMy Origin account numbers: []%0D%0A%0D%0AAny Request: e.g. please help me with missing accounts [])",
+    "secondaryBodyPluralText": "To manage these accounts email us at [enquiries@origin.com.au](mailto:enquiries@origin.com.au?subject=Request help with missing accounts&body=My full name: e.g. Jane Rachel Doe%0D%0A%0D%0AMy Origin account numbers: []%0D%0A%0D%0AAny Request: e.g. please help me with missing accounts [])"
+  },
+  "button": {
+    "bodySingular": "The account below is likely to be in our old system. Get in touch and we can help find what you need.",
+    "bodyPlural": "The accounts below are likely to be in our old system. Get in touch and we can help find what you need.",
+    "buttonText": "View accounts"
+  }
+}

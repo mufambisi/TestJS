@@ -1,0 +1,35 @@
+{
+  "PlainDate": "2021-06-29",
+  "DateTime": "2021-06-29T13:01:38.000Z",
+  "DateTimeInZone": "2021-06-29T13:01:38+10:00",
+  "Timezone": "UTC",
+  "Query": {
+    "viewer": {
+      "__typename": "Viewer",
+      "account": {
+        "__typename": "Account",
+        "balance": 10000,
+        "services": [
+          {
+            "__typename": "LpgService",
+            "serviceId": "123",
+            "type": "LPG",
+            "primary": true,
+            "name": "9 YARRAMAN ROAD NOBLE PARK VIC 3024",
+            "orders": []
+          }
+        ],
+        "invoices": [
+          {
+            "__typename": "Invoice",
+            "balance": 12345,
+            "dueDate": "2022-02-08",
+            "status": "OUTSTANDING"
+          }
+        ],
+        "contracts": [],
+        "debitNotes": []
+      }
+    }
+  }
+}

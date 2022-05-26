@@ -1,0 +1,26 @@
+{
+  "base": {
+    "default-environment": "staging"
+  },
+  "dev": {
+    "properties": {}
+  },
+  "staging": {
+    "properties": {
+      "environment-url": "https://staticsite-cdn-staging.origindigital-pac.com.au",
+      "singleAccountUser": "dashboardE2E_donotdelete@origindigital-pac.com.au",
+      "multipleAccountUser": "rx25@origindigital-pac.com.au",
+      "password": "Origin1234",
+      "lpg": {
+        "lpgKraken": {
+          "email": "lpgkraken_e2e_01_donotdelete@staging.example.com",
+          "customerNumber": "2003522042"
+        },
+        "lpgOnly": {
+          "email": "2003510980-LPGOnly@staging.example.com",
+          "customerNumber": "2003510980"
+        }
+      }
+    }
+  }
+}

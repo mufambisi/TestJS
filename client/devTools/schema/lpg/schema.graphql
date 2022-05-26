@@ -1,0 +1,293 @@
+type Order implements Node {
+  id: ID!
+  orderNumber: String!
+  serviceId: String!
+  createdDate: DateTime!
+  deliveryDate: DateTime
+  originDelivery: Boolean
+  products: [OrderProduct!]
+  orderProductType: ProductType
+  source: OrderSource
+  status: OrderStatus
+  totalCost: Int
+  trackingId: String
+}
+
+interface Node {
+  id: ID!
+}
+
+"""
+The javascript `Date` as string. Type represents date and time as the ISO Date string.
+"""
+scalar DateTime
+
+type OrderProduct {
+  code: String!
+  name: String
+  type: ProductType
+  quantity: Float
+}
+
+enum ProductType {
+  EXCHANGE
+  INSITU
+  METERED_NETWORK
+  SUNDRY_ONLY
+}
+
+enum OrderSource {
+  COMMUNITY
+  FORECASTED_ORDER
+  INTERNAL
+  IVR
+  MY_ACCOUNT
+  ORIGIN_WEBSITE
+  WEB
+}
+
+enum OrderStatus {
+  ACTIVATED
+  ADJUSTED
+  APPROVED
+  AUTO_APPROVED
+  CANCELLATION_REQUESTED
+  CANCELLED
+  COUNTERED
+  DELIVERED
+  DRAFT
+  EXPIRED
+  FORECASTED
+  INVOICED
+  IN_PROGRESS
+  NON_BILLABLE
+  NOT_DELIVERED
+  REBILL
+  REJECTED
+  REVERSED
+  SCHEDULED
+  SUBMITTED
+  UNABLE_TO_CANCEL
+  UNABLE_TO_SCHEDULE
+}
+
+type LpgService implements Node & Service {
+  id: ID!
+  type: ServiceType!
+
+  """Salesforce location ID"""
+  serviceId: String!
+
+  """Service location name (address)"""
+  name: String
+  primary: Boolean
+  status: ServiceStatus!
+  orders(orderStatuses: [OrderStatus!], orderProductTypes: [ProductType!]): [Order!]
+  defaultProduct: Product
+  numberOfGasBottles: Int
+}
+
+interface Service implements Node {
+  id: ID!
+  type: ServiceType!
+}
+
+enum ServiceType {
+  LPG
+}
+
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+type Product {
+  code: String!
+  name: String
+  type: ProductType
+}
+
+type DebitNote implements Node {
+  id: ID!
+  debitNoteNumber: String!
+  balance: Int
+  totalAmount: Int
+  reason: String
+  status: DebitNoteStatus!
+}
+
+enum DebitNoteStatus {
+  CANCELLED
+  OUTSTANDING
+  PAID
+  POSTED
+  UNKNOWN
+}
+
+type Invoice implements Node {
+  id: ID!
+  invoiceNumber: String!
+  balance: Int
+  totalAmount: Int
+  createdDate: DateTime!
+  dueDate: DateTime
+  status: InvoiceStatus
+  pdfAvailable: Boolean!
+  debitNotes(statuses: [DebitNoteStatus!]): [DebitNote!]
+  invoiceItems: [InvoiceItem!]
+  downloadUrl: String
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OUTSTANDING
+  PAID
+  POSTED
+  REQUEST_REVERSAL
+  REVERSED
+}
+
+type InvoiceItem {
+  itemName: String!
+  quantity: Float!
+  totalAmount: Int!
+}
+
+type Contract implements Node {
+  id: ID!
+  contractNumber: String!
+  directDebitAmount: Int
+  nextDebitDate: DateTime
+  cardAccountNumber: String
+  paymentType: PaymentType
+  nextPaymentDate: DateTime
+  nextPaymentAmount: Int
+  invoiceNumber: String
+  instalmentFrequency: InstalmentFrequency
+  directDebitType: DirectDebitType
+  contractType: ContractType
+  status: ContractStatus
+}
+
+enum PaymentType {
+  ACH
+  BANK_TRANSFER
+  CASH
+  CHECK
+  CREDIT_CARD
+  CREDIT_CARD_REFERENCE_TRANSACTION
+  DEBIT_CARD
+  OTHER
+  PAY_PAL
+  WIRE_TRANSFER
+}
+
+enum InstalmentFrequency {
+  FORTNIGHTLY
+  MONTHLY
+  WEEKLY
+}
+
+enum DirectDebitType {
+  EX_PAYMENT_ARRANGEMENT
+  FORTNIGHTLY
+  INVOICE_BASED
+  MONTHLY
+  PAYMENT_ARRANGEMENT
+  WEEKLY
+}
+
+enum ContractType {
+  DIRECT_DEBIT_AUTHORITY
+  HARDSHIP_ARRANGEMENT
+  PAYMENT_EXTENSION
+  PROMISE_TO_PAY
+  SERVICE_AGREEMENT
+  SUPPLY_AGREEMENT
+}
+
+enum ContractStatus {
+  ACTIVE
+  BROKEN
+  CANCELLED
+  COMPLETED
+  COOLING_OFF_PERIOD
+  CREATE_INSTALMENTS
+  EXECUTED
+  EXPIRED
+  PAYMENT_METHOD_REQUIRED
+  PENDING
+}
+
+type Payment implements Node {
+  id: ID!
+  paymentNumber: String!
+  date: DateTime
+  type: String
+  amount: Int
+  status: PaymentStatus
+}
+
+enum PaymentStatus {
+  CANCELLED
+  ERROR
+  POSTED
+  PROCESSED
+  PROCESSING
+  VOIDED
+}
+
+type Account implements Node {
+  id: ID!
+  accountNumber: String!
+  balance: Int
+  supplyStopped: Boolean
+  invoices(statuses: [InvoiceStatus!]): [Invoice!]
+  invoice(invoiceNumber: String!): Invoice
+  payments(statuses: [PaymentStatus!]): [Payment!]
+  services(statuses: [ServiceStatus!]): [Service!]
+  debitNotes(statuses: [DebitNoteStatus!]): [DebitNote!]
+  contracts(contractStatuses: [ContractStatus!], contractTypes: [ContractType!], directDebitTypes: [DirectDebitType!]): [Contract!]
+}
+
+type Query {
+  applicationInfo: ApplicationInfo!
+  node(id: ID!): Node
+  viewer: Viewer!
+}
+
+type ApplicationInfo {
+  name: String!
+  version: String!
+  environment: String!
+}
+
+type Viewer {
+  account(accountNumber: String!): Account
+  accounts: [Account!]
+  service(serviceId: String!): Service
+  services(statuses: [ServiceStatus!]): [Service!]
+}
+
+type Mutation {
+  createOrderForAccount(orderDetails: CreateOrderForAccountInput!): Order!
+  submitOrder(orderDetails: SubmitOrderInput!): Order!
+}
+
+"""Create order using customer number"""
+input CreateOrderForAccountInput {
+  accountNumber: String!
+  serviceId: String!
+  products: [OrderProductInput!]!
+}
+
+input OrderProductInput {
+  code: String!
+  quantity: Int!
+}
+
+"""Update existing order"""
+input SubmitOrderInput {
+  accountNumber: String!
+  orderNumber: String!
+}

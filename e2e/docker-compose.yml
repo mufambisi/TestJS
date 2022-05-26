@@ -1,0 +1,20 @@
+version: "3.6"
+services:
+  testcafe:
+    build:
+      context: .
+      dockerfile: Dockerfile.tc
+    ports:
+      - "1337:1337"
+      - "1338:1338"
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      NODE_OPTIONS: ${NODE_OPTION_HEADER_SIZE}
+
+    volumes:
+      - "$PWD/scripts:/scripts"
+      - "$PWD/src:/src"
+      - "$PWD/conf:/conf"
+      - "$PWD/build/test-results/e2e/tc:/build/test-results/e2e/tc"
+
+    command: yarn testcafe:ci

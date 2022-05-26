@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getWidgetManifest returns widget manifest 1`] = `
+Array [
+  Object {
+    "name": "PortfolioSummaryWidget",
+    "propsBuilder": [Function],
+    "shouldLoad": [Function],
+    "widgetComponent": [Function],
+  },
+  Object {
+    "name": "SpikeWidget",
+    "shouldLoad": [Function],
+    "widgetComponent": [Function],
+  },
+  Object {
+    "name": "FuelDiscountWidget",
+    "widgetComponent": [Function],
+  },
+  Object {
+    "name": "CrossSellWidget",
+    "propsBuilder": [Function],
+    "widgetComponent": [Function],
+  },
+  Object {
+    "name": "PortfolioSummaryWidgetClosed",
+    "propsBuilder": [Function],
+    "shouldLoad": [Function],
+    "widgetComponent": [Function],
+  },
+  Object {
+    "name": "KrakenContactWidget",
+    "shouldLoad": [Function],
+    "widgetComponent": [Function],
+  },
+  Object {
+    "name": "GstDisclaimerWidget",
+    "noTracking": true,
+    "widgetComponent": [Function],
+  },
+]
+`;

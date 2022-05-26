@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "delay": 200,
+  "route": "/my-account/vpp/api/weather/3000",
+  "responseBody": {
+    "temperature": 21.5,
+    "forecastDescription": "Partly cloudy"
+  }
+}

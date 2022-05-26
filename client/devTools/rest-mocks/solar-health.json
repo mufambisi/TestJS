@@ -1,0 +1,85 @@
+{
+  "status": 200,
+  "delay": 100,
+  "method": "post",
+  "route": "/my-account/solar-usage/api/graphql",
+  "responseBody": {
+    "data": {
+      "viewer": {
+        "__typename": "Viewer",
+        "service": {
+          "__typename": "Service",
+          "health": "WORKING",
+          "location": {
+            "__typename": "Location",
+            "address": {
+              "__typename": "Address",
+              "street": "1519 7 AVONLEIGH CT",
+              "suburb": "GLENWOOD",
+              "state": "NSW",
+              "postcode": "2768"
+            },
+            "latitude": -33.74056056,
+            "longitude": 150.93619055,
+            "timezone": "Australia/Sydney"
+          },
+          "usage": {
+            "__typename": "EnergyUsage",
+            "last7Days": {
+              "__typename": "Last7Days",
+              "totals": {
+                "__typename": "Totals",
+                "generation": 1238.47,
+                "consumption": 0.0
+              },
+              "daily": [
+                {
+                  "__typename": "DailyUsage",
+                  "date": "2021-12-18T13:00:00.000Z",
+                  "consumption": 0.0,
+                  "generation": 35.0079
+                },
+                {
+                  "__typename": "DailyUsage",
+                  "date": "2021-12-17T13:00:00.000Z",
+                  "consumption": 0.0,
+                  "generation": 56.6434
+                },
+                {
+                  "__typename": "DailyUsage",
+                  "date": "2021-12-16T13:00:00.000Z",
+                  "consumption": 0.0,
+                  "generation": 44.2864
+                },
+                {
+                  "__typename": "DailyUsage",
+                  "date": "2021-12-15T13:00:00.000Z",
+                  "consumption": 0.0,
+                  "generation": 41.229
+                },
+                {
+                  "__typename": "DailyUsage",
+                  "date": "2021-12-14T13:00:00.000Z",
+                  "consumption": 0.0,
+                  "generation": 59.9801
+                },
+                {
+                  "__typename": "DailyUsage",
+                  "date": "2021-12-13T13:00:00.000Z",
+                  "consumption": 0.0,
+                  "generation": 62.4031
+                },
+                {
+                  "__typename": "DailyUsage",
+                  "date": "2021-12-12T13:00:00.000Z",
+                  "consumption": 0.0,
+                  "generation": 63.7144
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

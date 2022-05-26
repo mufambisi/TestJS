@@ -1,0 +1,19 @@
+{
+  "config": {
+    "env": "prod",
+    "analyticsDebugToConsole": false,
+    "sumoCollectorKey": "http/ZaVnC4dhaV2glr1zmw6cHAPXbaSIQjDrVi9DIRoiMLJMBvwG2N3WO4Ig9MtUeo_H5tXTwCjIGGn3s-Ys3hQoh8vfsEAzhfjYJwjdRnjmNPiCWu1XXvqm-g==",
+    "sumoSendOnErrors": true,
+    "logLevelSumo": "warn",
+    "logLevelConsole": "none",
+    "toggles": {
+      "BatteryWidget": false,
+      "EVWidget": false,
+      "BroadbandWidget": true,
+      "SplitCrmWidget": true,
+      "SplitCrmNoButton": true,
+      "SplitCrmButton": false,
+      "FuelDiscountWidget": false
+    }
+  }
+}

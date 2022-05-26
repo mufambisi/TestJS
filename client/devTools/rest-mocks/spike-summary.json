@@ -1,0 +1,14 @@
+{
+  "status": 200,
+  "delay": 1000,
+  "route": "/api/cleverly/ohm/summary",
+  "responseBody": {
+    "data": {
+      "balance": {
+        "points": 26761
+      },
+      "upcoming": "Tue 11 May, 8 pm – 9 am"
+    },
+    "status": 1
+  }
+}

@@ -1,0 +1,277 @@
+{
+  "PlainDate": "2021-06-29",
+  "DateTime": "2021-06-29T13:01:38.000Z",
+  "DateTimeInZone": "2021-06-29T13:01:38+10:00",
+  "Timezone": "UTC",
+  "Query": {
+    "viewer": {
+      "kraken": {
+        "accounts": [
+          {
+            "accountNumber": "A-BS6540BF",
+            "services": [
+              {
+                "__typename": "ElectricityService",
+                "type": "ELECTRICITY",
+                "validFrom": "2020-12-31T14:00:00.000Z",
+                "isActive": true,
+                "property": {
+                  "address": {
+                    "value": "24 West St, Hillsdale, Nsw 2047",
+                    "components": {
+                      "locality": "Hillsdale",
+                      "postcode": "2047"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "accountNumber": "A-5CA6C8DE",
+            "services": [
+              {
+                "__typename": "GasService",
+                "type": "GAS",
+                "validFrom": "2020-12-31T14:00:00.000Z",
+                "isActive": true,
+                "property": {
+                  "address": {
+                    "value": "24 West St, Hillsdale, Nsw 2047",
+                    "components": {
+                      "locality": "Hillsdale",
+                      "postcode": "2047"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "accountNumber": "A-A5B5065D",
+            "services": [
+              {
+                "__typename": "ElectricityService",
+                "type": "ELECTRICITY",
+                "validFrom": "2021-12-31T14:00:00.000Z",
+                "isActive": true,
+                "property": {
+                  "address": {
+                    "value": "24 West St, Hillsdale, Nsw 2047",
+                    "components": {
+                      "locality": "Hillsdale",
+                      "postcode": "2047"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "accountNumber": "A-BC1A654E",
+            "services": [
+              {
+                "__typename": "ElectricityService",
+                "type": "ELECTRICITY",
+                "validFrom": "2020-12-31T14:00:00.000Z",
+                "isActive": true,
+                "property": {
+                  "address": {
+                    "value": "12 Ocean St, Sydney, NSW 2000",
+                    "components": {
+                      "locality": "Sydney",
+                      "postcode": "2000"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "accountNumber": "A-D4CA509C",
+            "services": [
+              {
+                "__typename": "ElectricityService",
+                "type": "ELECTRICITY",
+                "validFrom": "2020-12-31T14:00:00.000Z",
+                "isActive": true,
+                "property": {
+                  "address": {
+                    "value": "28 Bathurst Road, The Rocks, NSW 2000",
+                    "components": {
+                      "locality": "The Rocks",
+                      "postcode": "2000"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "accountNumber": "A-A15C8D6C",
+            "services": [
+              {
+                "__typename": "ElectricityService",
+                "type": "ELECTRICITY",
+                "validFrom": "2020-12-31T14:00:00.000Z",
+                "isActive": true,
+                "property": {
+                  "address": {
+                    "value": "24 West St, Hillsdale, Nsw 2047",
+                    "components": {
+                      "locality": "Hillsdale",
+                      "postcode": "2047"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "accountNumber": "A-C5D423CF",
+            "services": [
+              {
+                "__typename": "ElectricityService",
+                "type": "ELECTRICITY",
+                "validFrom": "2020-12-31T14:00:00.000Z",
+                "isActive": true,
+                "property": {
+                  "address": {
+                    "value": "23 Woodlands Ave, Forest Glen, NSW 2157",
+                    "components": {
+                      "locality": "Forest Glen",
+                      "postcode": "2157"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "accountNumber": "A-BC1A612E",
+            "services": [
+              {
+                "__typename": "ElectricityService",
+                "type": "ELECTRICITY",
+                "validFrom": "2020-12-31T14:00:00.000Z",
+                "validTo": "2021-12-31T14:00:00.000Z",
+                "isActive": false,
+                "property": {
+                  "address": {
+                    "value": "6 Eurack Court, Kingsvale, NSW 2587",
+                    "components": {
+                      "locality": "Kingsvale",
+                      "postcode": "2587"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "digital": {
+        "accounts": [
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ0",
+            "type": "KRAKEN",
+            "accountId": "A-BS6540BF",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjExZWJmNWE5LTVmZjEtMDJjOS04N2M0LTA2NzM0YjA1MDgzKjM9",
+            "type": "SAP",
+            "accountId": "400005194727",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ1",
+            "type": "KRAKEN",
+            "accountId": "A-5CA6C8DE",
+            "product": "GAS",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ2",
+            "type": "KRAKEN",
+            "accountId": "A-A5B5065D",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ3",
+            "type": "KRAKEN",
+            "accountId": "A-BC1A654E",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ4",
+            "type": "KRAKEN",
+            "accountId": "A-D4CA509C",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ5",
+            "type": "KRAKEN",
+            "accountId": "A-A15C8D6C",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ6",
+            "type": "KRAKEN",
+            "accountId": "A-C5D423CF",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ7",
+            "type": "KRAKEN",
+            "accountId": "A-BC1A612E",
+            "product": "ELECTRICITY",
+            "status": "CLOSED"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjExZWJmNWE5LTVmZjEtMDJjOS04N2M0LTA2NzM0YjA1MDgzZSJ9",
+            "type": "LPG",
+            "accountId": "0108504305",
+            "product": "LPG",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjExZWJmNWE5LTVmZjEtMDJjOS04N2M0LTA2NzM0YjA1MDabEFJ9",
+            "type": "BROADBAND",
+            "accountId": "1234566",
+            "product": "BROADBAND",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjExZWJmNWE5LTVmZjEtMDJjOS04N2M0LTA2NzM0YjA1MDgzKjMi",
+            "type": "OHM",
+            "accountId": "10000001",
+            "product": "OHM",
+            "status": "ACTIVE"
+          }
+        ],
+        "features": [
+          {
+            "id": "11000112",
+            "type": "BATTERY",
+            "featureId": "123_500003528527",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "11000114",
+            "type": "EV",
+            "featureId": "123_500003528544",
+            "status": "ACTIVE"
+          }
+        ]
+      }
+    }
+  }
+}

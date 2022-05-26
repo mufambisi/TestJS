@@ -1,0 +1,29 @@
+OriginTemplateFormatVersion: "2018-09-19"
+
+# CI / CD configuration
+# app-id - used to invoke jenkins jobs for this microsite and in some deployment jobs
+# environment - a map of environment variables to set during the microsite build pipeline prepare stage
+#   * TZ - can be used to set the timezone for selenoid
+Config:
+  app-id: "dashboard-rx"
+  build-services: [ ]
+  tooling:
+    - node12
+  environment:
+    TZ: 'Australia/Melbourne'
+
+# Components document to the build pipeline what downstream builds need to be run.
+# Each type will need to produce a correctly named artifact for the downstream jobs.
+# These dependencies can be seen in the development and release pipelines in the ci-micro-site project.
+# But they follow a naming convention of the following:
+#   output/$componentType-$componentName[-infra].(zip|jar)
+# Note: In theory you can have multiple components of the same type with different names, but this may not be fully tested.
+Components:
+  # Should produce the following artifacts:
+  # output/tal-assets.zip
+  assets:
+    type: tal
+
+CI:
+  flow:
+    type: "retailx"

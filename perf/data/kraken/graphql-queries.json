@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "operations": [
+    {
+      "signature": "dcb9a4737b1b308ac9fa27bb4a6d30a084a699ca600fa7e02d583075fba84479",
+      "document": "query GetViewBillDownloadUrl($accountNumber:String!,$billId:ID!,$billType:BillTypeEnum!){account(accountNumber:$accountNumber){__typename bill(billType:$billType,id:$billId){__typename temporaryUrl}}}",
+      "metadata": {
+        "engineSignature": ""
+      }
+    },
+    {
+      "signature": "8751352a7c3f1eb3fd69f9266b885a175e485b7441d21636e2e35d78da5a452f",
+      "document": "query PredictedBillQuery($accountNumber:String!){account(accountNumber:$accountNumber){__typename agreements(active:true){__typename id supplyType...on ElectricityAgreementType{__typename meterPoint{__typename predictedBill{__typename components{__typename consumptionChargesToDate{__typename costInCents costInCentsWithGst}pastWeekConsumptionCharges{__typename costInCents costInCentsWithGst}predictedConsumptionCharges{__typename costInCents costInCentsWithGst}predictedStandingCharges{__typename costInCents costInCentsWithGst}secondsSinceBeginningOfBillingPeriod secondsUntilEndOfBillingPeriod standingChargesToDate{__typename costInCents costInCentsWithGst}}costInCents costInCentsWithGst}}}}balance number}}",
+      "metadata": {
+        "engineSignature": ""
+      }
+    },
+    {
+      "signature": "a61fd873c5a5d030322f43a467d16a0de5381acc06593faefbe5da14be6b06f1",
+      "document": "query AccountSummaryQuery($accountNumber:String!,$paymentForcastToDate:Date!){account(accountNumber:$accountNumber){__typename agreements(active:true){__typename id supplyType...on ElectricityAgreementType{__typename meterPoint{__typename meters{__typename installationType}}}}balance billingOptions{__typename currentBillingPeriodEndDate currentBillingPeriodStartDate isFixed nextBillingDate periodLength periodStartDay}firstBill:bills(first:1){__typename edges{__typename node{__typename billType fromDate id toDate...on StatementType{__typename consumptionEndDate consumptionStartDate}}}}currentPaymentInstructions:directDebitInstructions(first:2,statuses:[ACTIVE]){__typename edges{__typename node{__typename instructionType}}}dueCharges{__typename amount dueDate}number paymentExtensionInfo{__typename paymentExtensionEligibility{__typename isEligibleForPaymentExtension}}paymentForecast(dateTo:$paymentForcastToDate){__typename amount date}currentPaymentSchedule:paymentSchedules(active:true,first:1){__typename edges{__typename node{__typename isVariablePaymentAmount scheduleType}}}pendingPayments:payments(first:10,status:PENDING){__typename edges{__typename node{__typename amount paymentDate}}}promisedPayments:payments(last:1,status:PROMISED){__typename edges{__typename node{__typename amount paymentDate}}}properties{__typename address}}}",
+      "metadata": {
+        "engineSignature": ""
+      }
+    },
+    {
+      "signature": "e3b643cb65bb913b7c4368e1c24533d1ee819363a9d0742609de8dbd2a12ba6b",
+      "document": "query PortfolioSummaryQuery{viewer{__typename accounts{__typename number status}portfolioId}}",
+      "metadata": {
+        "engineSignature": ""
+      }
+    }
+  ]
+}

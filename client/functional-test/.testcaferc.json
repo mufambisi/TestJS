@@ -1,0 +1,20 @@
+{
+  "browsers": ["chrome"],
+  "src": ["./specs/*.ts"],
+  "reporter": {
+    "name": "slack"
+  },
+  "quarantineMode": false,
+  "debugMode": false,
+  "debugOnFail": false,
+  "stopOnFirstFail": false,
+  "skipJsErrors": true,
+  "skipUncaughtErrors": true,
+  "concurrency": 3,
+  "selectorTimeout": 10000,
+  "assertionTimeout": 10000,
+  "pageLoadTimeout": 22500,
+  "speed": 1,
+  "tsConfigPath": "./tsconfig.json",
+  "developmentMode": false
+}

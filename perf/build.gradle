@@ -1,0 +1,30 @@
+plugins {
+    id "com.github.lkishalmi.gatling" version "3.3.4"
+}
+
+repositories {
+    maven { url "https://artifactory.origindigital-dac.com.au/artifactory/odt-remote-repos" }
+}
+
+ext {
+    scalaMajorMinor = '2.12'
+    scalaVersion = "$scalaMajorMinor.8"
+    jacksonVersion = '2.10.1'
+    gatlingCommonVersion = "1.+"
+}
+
+dependencies {
+    compile "org.scala-lang:scala-library:$scalaVersion"
+    gatling "com.fasterxml.jackson.module:jackson-module-scala_$scalaMajorMinor:$jacksonVersion"
+    gatling "au.com.origin.gatling:gatling-common:$gatlingCommonVersion"
+}
+
+task gatlingData(type: GradleBuild) {
+    tasks = ['gatlingRun-FetchAuth0Token']
+}
+
+task gatlingTest(type: GradleBuild) {
+    tasks = ['gatlingRun-AccountSummaryQueryGRAPH', 'gatlingRun-PortfolioSummaryQueryGRAPH',]
+}
+
+

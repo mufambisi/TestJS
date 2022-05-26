@@ -1,0 +1,16 @@
+{
+  "status": 200,
+  "delay": 200,
+  "route": "/my-account/vpp/api/state/500003528527",
+  "responseBody": {
+    "data": {
+      "updatedAt": "2020-11-17T04:46:23+00:00",
+      "batteryKwh": -0.3,
+      "currentLoadKwh": 2.65,
+      "batteryCharge": 80,
+      "gridKwh": 2.35,
+      "solarKwh": 0,
+      "postcode": "3000"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "base": {
+    "default-environment": "staging",
+    "properties": {
+      "default-load": "constant:5rps20s"
+    }
+  },
+  "jenkins": {
+    "properties": {
+      "AccountSummaryQueryGRAPH-mean-threshold-msecs": 831,
+      "PortfolioSummaryQueryGRAPH-mean-threshold-msecs": 361
+    }
+  },
+  "staging": {
+    "properties": {
+      "environment-url": "https://api-test.rx.originenergy.com.au",
+      "auth0-base-url": "https://preprod-originenergy.au.auth0.com"
+    }
+  }
+}

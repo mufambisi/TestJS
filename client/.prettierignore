@@ -1,0 +1,6 @@
+.vscode
+dist
+graphql-mocks
+graphql-types
+devTools/schema
+coverage

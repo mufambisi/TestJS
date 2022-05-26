@@ -1,0 +1,23 @@
+{
+  "name": "dashboard-rx-microsite-functional-tests",
+  "version": "1.0.0",
+  "description": "Templated Microsite functional tests",
+  "license": "UNLICENSED",
+  "scripts": {
+    "lint": "yarn shared:prepare && origin-scripts lint",
+    "shared:prepare": "yarn shared:clean && yarn shared:copy",
+    "shared:copy": "cp -r ../../shared/testcafe/ ./shared",
+    "shared:clean": "rm -rf ./shared"
+  },
+  "devDependencies": {
+    "@applitools/eyes-testcafe": "^1.5.14",
+    "@origin-digital/digital-stub": "^7.2.2",
+    "@origin-digital/event-dispatcher": "^5.10.1",
+    "@origin-digital/kraken-fixture": "^0.0.19",
+    "testcafe": "^1.8.1",
+    "testcafe-browser-provider-browserstack": "^1.11.0",
+    "testcafe-browser-provider-lambdatest": "^2.0.1",
+    "testcafe-reporter-test-summary": "^1.0.10",
+    "mockdate": "3.0.5"
+  }
+}

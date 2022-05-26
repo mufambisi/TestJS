@@ -1,0 +1,74 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<TransparentCard /> should render without error 1`] = `
+.c0 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-sizing: border-box;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  background-color: transparent;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  width: 100%;
+}
+
+@media screen and (min-width:576px) {
+  .c0 {
+    padding-top: 8px;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c0 {
+    padding-top: 8px;
+  }
+}
+
+@media screen and (min-width:992px) {
+  .c0 {
+    padding-top: 0;
+  }
+}
+
+@media screen and (min-width:1200px) {
+  .c0 {
+    padding-top: 0;
+  }
+}
+
+@media screen and (min-width:576px) {
+  .c0 {
+    padding-bottom: 8px;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c0 {
+    padding-bottom: 8px;
+  }
+}
+
+@media screen and (min-width:992px) {
+  .c0 {
+    padding-bottom: 0;
+  }
+}
+
+@media screen and (min-width:1200px) {
+  .c0 {
+    padding-bottom: 0;
+  }
+}
+
+<div>
+  <div
+    class="c0"
+    width="full"
+  >
+    Hello world
+  </div>
+</div>
+`;

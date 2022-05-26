@@ -1,0 +1,5 @@
+build
+shared
+node_modules
+.eslintcache
+*.log

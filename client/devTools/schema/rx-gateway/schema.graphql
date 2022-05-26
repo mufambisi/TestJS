@@ -1,0 +1,696 @@
+type DigitalAddress implements Node {
+  id: ID!
+  addressId: String!
+  qasId: String
+  primaryPlaceOfResidence: Boolean!
+  services: [DigitalService!]!
+  formattedAddress: String!
+  components: AustralianAddressComponents!
+}
+
+interface Node {
+  id: ID!
+}
+
+"""
+The atomic parts of an Australian address. Field suffixed with 'Parts' are a combined from other atomic field defined in this entity.
+"""
+type AustralianAddressComponents {
+  postBox: String
+  postBoxType: String
+  levelNumber: String
+  levelType: String
+  unitNumber: String
+  unitType: String
+  buildingName: String
+  lotNumber: String
+  streetNumber: String
+  streetNumberSuffix: String
+
+  """Composite field combining streetNumber + streetNumberSuffix"""
+  streetNumberParts: String
+  streetName: String
+  streetSuffix: String
+  streetType: String
+
+  """Composite field combining streetName + streetSuffix + streetType"""
+  streetNameParts: String
+
+  """Composite field combining streetNumberParts + streetNameParts"""
+  streetParts: String
+  locality: String
+  postcode: String
+  state: AustralianStateCode
+  stateName: String
+  timezone: Timezone
+  coordinates: Coordinates
+  section: String
+  block: String
+  dpNumber: String
+}
+
+enum AustralianStateCode {
+  ACT
+  NSW
+  NT
+  QLD
+  SA
+  TAS
+  VIC
+  WA
+}
+
+"""
+Represents a timezone location. string is formatted in a IANA tz database format.
+"""
+scalar Timezone
+
+type Coordinates {
+  latitude: Float!
+  longitude: Float!
+}
+
+type DigitalService implements Node {
+  id: ID!
+  serviceId: String!
+  type: DigitalServiceType!
+  status: DigitalServiceStatus!
+  address: DigitalAddress
+}
+
+enum DigitalServiceType {
+  GAS
+  ELECTRICITY
+  HOT_WATER
+  SOLAR
+  OHM
+  VPP_BATTERY
+  LPG_EXCHANGE
+  LPG_INSITU
+  LPG_METERED
+  LPG_INSITU_METERED
+  LPG_EXCHANGE_METERED
+  LPG_TERMINAL
+  NBN
+  OPTICOMM
+  VOIP
+  UNKNOWN
+}
+
+enum DigitalServiceStatus {
+  ACTIVE
+  SETUP
+  CLOSED
+  CANCELLED
+  UNKNOWN
+}
+
+type DigitalAccount implements Node {
+  id: ID!
+
+  """The type of origin system this account belongs to."""
+  type: DigitalAccountType!
+  accountId: String!
+  product: DigitalAccountProductType! @deprecated(reason: "This field is planned for removal and should no longer be used. To see what products an account has use the service field.")
+  status: DigitalAccountStatus!
+  services: [DigitalService!]!
+}
+
+"""Represents a type of origin system this account belongs to."""
+enum DigitalAccountType {
+  SAP
+  BROADBAND
+  LPG
+  OHM
+  KRAKEN
+  VPP
+  UNKNOWN
+}
+
+enum DigitalAccountProductType {
+  GAS
+  ELECTRICITY
+  HOT_WATER
+  BROADBAND
+  SOLAR
+  LPG
+  OHM
+  VPP_BATTERY
+  UNKNOWN
+}
+
+enum DigitalAccountStatus {
+  ACTIVE
+  SETUP
+  CLOSED
+  CANCELLED
+  UNKNOWN
+}
+
+type Feature implements Node {
+  id: ID!
+  type: FeatureType!
+  featureId: String
+  status: FeatureStatus!
+}
+
+enum FeatureType {
+  INTERCOM
+  OHM
+  BATTERY
+  EV
+}
+
+enum FeatureStatus {
+  ACTIVE
+  INACTIVE
+}
+
+type DigitalUser implements Node & User {
+  id: ID!
+  type: UserType!
+  digitalUserId: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  mobile: String
+  landline: String
+  dateOfBirth: PlainDate
+  customerType: DigitalUserCustomerType!
+}
+
+interface User implements Node {
+  id: ID!
+  type: UserType!
+}
+
+enum UserType {
+  DIGITAL
+  KRAKEN
+}
+
+"""
+Represents an abstract year, month and day and is not associated with a timezone or an instance of time. Used to return events in time that do you require instance resolution and which timezones are ignored. An example are Birthdays, which most people and institutions treat abstractly. String in ISO-8601 date format which is : YYYY-MM-DD
+"""
+scalar PlainDate
+
+enum DigitalUserCustomerType {
+  RESIDENTIAL
+  SMALL_MEDIUM_ENTERPRISE
+  MULTI_SITE_PORTAL
+}
+
+type GasProduct implements Node & Product {
+  id: ID!
+  type: ProductType!
+  code: String!
+  name: String!
+  description: String
+  rates(filter: GasRateFilter): [GasRate!]!
+}
+
+interface Product implements Node {
+  id: ID!
+  type: ProductType!
+  code: String!
+  name: String!
+  description: String
+}
+
+enum ProductType {
+  ELECTRICITY
+  GAS
+}
+
+type GasRate {
+  rateExcludingTax: Float!
+  rateIncludingTax: Float!
+  description: String
+  activeFrom: DateTime
+  activeTo: DateTime
+  active: Boolean!
+  timeOfDay: String
+  bandCategory: String
+  stepStart: Float
+  stepEnd: Float
+}
+
+"""
+The javascript `Date` as string. Type represents date and time as the ISO Date string.
+"""
+scalar DateTime
+
+input GasRateFilter {
+  active_equal: Boolean
+}
+
+type ElectricityServiceProvider implements Node & ServiceProvider {
+  id: ID!
+  name: String!
+  type: ServiceProviderType!
+  emergencyPhoneNumber: String!
+}
+
+interface ServiceProvider implements Node {
+  id: ID!
+  name: String!
+  type: ServiceProviderType!
+}
+
+enum ServiceProviderType {
+  ELECTRICITY
+  GAS
+}
+
+type ElectricityMeterRegister implements Node & MeterRegister {
+  id: ID!
+  type: MeterRegisterType!
+  identifier: String!
+  timeOfDay: String!
+  networkTariffCode: String!
+  typeOfMeasure: ElectricityRegisterUnitType!
+  energyDirection: EnergyDirection!
+  status: ElectricityRegisterStatus!
+}
+
+interface MeterRegister implements Node {
+  id: ID!
+  type: MeterRegisterType!
+}
+
+enum MeterRegisterType {
+  ELECTRICITY
+}
+
+enum ElectricityRegisterUnitType {
+  CURRENT
+  REACTIVE
+}
+
+enum EnergyDirection {
+  IMPORT
+  EXPORT
+}
+
+enum ElectricityRegisterStatus {
+  ACTIVE
+  INACTIVE
+}
+
+type ElectricityMeter implements Node & Meter {
+  id: ID!
+  type: MeterType!
+  serialNumber: String!
+  meterId: String!
+  meterCapabilityLevel: MeterCapabilityLevel!
+  status: ElectricityMeterStatus!
+  activeFrom: DateTime
+  activeTo: DateTime
+  nextScheduledReadDate: DateTime
+  registers: [ElectricityMeterRegister!]!
+}
+
+interface Meter implements Node {
+  id: ID!
+  type: MeterType!
+  serialNumber: String!
+}
+
+enum MeterType {
+  ELECTRICITY
+  GAS
+}
+
+enum MeterCapabilityLevel {
+  BASIC
+  SMART
+}
+
+enum ElectricityMeterStatus {
+  ACTIVE
+  INACTIVE
+}
+
+type ElectricityMeterPoint implements Node & MeterPoint {
+  id: ID!
+  meterPointId: String!
+  meterPointType: MeterPointType!
+  status: String
+  identifier: String!
+  electricityServiceProvider: ElectricityServiceProvider @deprecated(reason: "Replaced with serviceProvider")
+  serviceProvider: ElectricityServiceProvider
+  meters: [ElectricityMeter!]!
+}
+
+interface MeterPoint implements Node {
+  id: ID!
+  meterPointId: String!
+  meterPointType: MeterPointType!
+  status: String
+}
+
+enum MeterPointType {
+  ELECTRICITY
+  GAS
+}
+
+type GasMeter implements Node & Meter {
+  id: ID!
+  type: MeterType!
+  serialNumber: String!
+  meterId: String!
+  status: GasMeterStatus!
+  activeFrom: DateTime
+  activeTo: DateTime
+  nextScheduledReadDate: DateTime
+}
+
+enum GasMeterStatus {
+  TURNED_ON
+  TURNED_OFF
+  PLUGGED
+  NO_METER
+}
+
+type GasServiceProvider implements Node & ServiceProvider {
+  id: ID!
+  name: String!
+  type: ServiceProviderType!
+  emergencyPhoneNumber: String!
+}
+
+type GasMeterPoint implements Node & MeterPoint {
+  id: ID!
+  meterPointId: String!
+  meterPointType: MeterPointType!
+  status: String
+  identifier: String!
+  serviceProvider: GasServiceProvider
+  meters: [GasMeter!]!
+}
+
+type ElectricityProduct implements Node & Product {
+  id: ID!
+  type: ProductType!
+  code: String!
+  name: String!
+  description: String
+  rates(filter: ElectricityRateFilter): [ElectricityRate!]!
+}
+
+type ElectricityRate {
+  rateExcludingTax: Float!
+  rateIncludingTax: Float!
+  description: String
+  activeFrom: DateTime
+  activeTo: DateTime
+  active: Boolean!
+  timeOfDay: String
+  bandCategory: String
+  networkTariffCode: String
+  chargeDescription: String
+  stepStart: Float
+  stepEnd: Float
+}
+
+input ElectricityRateFilter {
+  active_equal: Boolean
+}
+
+type ElectricityService implements Node & Service {
+  id: ID!
+  type: ServiceType!
+  agreementId: String!
+  validFrom: DateTime
+  validTo: DateTime
+  isActive: Boolean!
+  product: ElectricityProduct
+  meterPoint: ElectricityMeterPoint
+  property: Property
+  usage(timeUnit: UsageTimeUnit!, startDate: DateTime!, endDate: DateTime!, orderBy: UsageOrderBy, filter: EnergyUsageFilter): EnergyUsage!
+  availableUsageTimeUnits: [UsageTimeUnit!]!
+}
+
+interface Service implements Node {
+  id: ID!
+  type: ServiceType!
+}
+
+enum ServiceType {
+  ELECTRICITY
+  GAS
+  HOT_WATER
+}
+
+type EnergyUsage {
+  """the type of service for this usage"""
+  type: ServiceType!
+
+  """the size of the time period for each data point"""
+  timeUnit: UsageTimeUnit!
+
+  """
+  the timezone of the data point periods. data point dates will be returned in this timezone and the periods will align with the this timezone.
+  """
+  timezone: Timezone!
+
+  """the requested start date of the whole period of data"""
+  startDate: DateTime!
+
+  """the requested end date of the whole period of data"""
+  endDate: DateTime!
+
+  """
+  indicates that there are non missing data points within 1 time unit in the past for the current requested window
+  """
+  hasPrevious: Boolean!
+
+  """
+  indicates that there are non missing data points within 1 time unit in the future for the current requested window
+  """
+  hasNext: Boolean!
+
+  """
+  indicates that there a possibility that the feed in fields (totalFeedInCost, totalFeedInEnergy, feedInEarned) will have values
+  """
+  hasFeedIn: Boolean!
+
+  """
+  indicates that some of the data points for this range have missing type data points.
+  """
+  hasMissingDataPoints: Boolean!
+
+  """
+  indicates that some of the data points for this range have missing cost values.
+  """
+  hasMissingCosts: Boolean!
+
+  """different unit types of each of the value fields in the data points"""
+  unitsOfMeasure: EnergyUsageUnitsOfMeasure!
+
+  """collection of data points of usage for the requested period"""
+  dataPoints: [EnergyUsageDataPoint!]!
+}
+
+enum UsageTimeUnit {
+  BILLING
+  MONTHLY
+  DAILY
+  HOURLY
+}
+
+type EnergyUsageUnitsOfMeasure {
+  totalConsumedEnergy: EnergyUsageUnitType!
+  totalFeedInEnergy: EnergyUsageUnitType!
+  totalCost: UsageCostUnitType!
+  totalEarnings: UsageCostUnitType!
+  usageCost: UsageCostUnitType!
+  supplyCost: UsageCostUnitType!
+  feedInEarned: UsageCostUnitType!
+  totalEnergy: EnergyUsageUnitType! @deprecated(reason: "Replaced by the totalConsumedEnergy field.")
+  totalFeedInCost: UsageCostUnitType! @deprecated(reason: "Replaced by the totalEarnings field.")
+}
+
+enum EnergyUsageUnitType {
+  WATT_HOUR
+  WA_GAS_UNIT
+  JOULE
+  LITRE
+  NONE
+}
+
+enum UsageCostUnitType {
+  CENT
+  NONE
+}
+
+type EnergyUsageDataPoint implements UsageDataPoint {
+  type: UsageDataType!
+  startDate: DateTimeInZone!
+  endDate: DateTimeInZone!
+
+  """Total energy consumed from the grid, for all sources."""
+  totalConsumedEnergy: Float
+
+  """Total energy feed into the grid, for all sources."""
+  totalFeedInEnergy: Float
+
+  """Total of all costs incurred."""
+  totalCost: Float
+
+  """Total of all earnings made."""
+  totalEarnings: Float
+
+  """Cost of the actual consumption of energy from the grid."""
+  usageCost: Float
+
+  """Cost associated with the supplying of energy from the grid."""
+  supplyCost: Float
+
+  """Earnings associated with the feeding energy back into the grid."""
+  feedInEarned: Float
+
+  """Total energy consumed from the grid, for all sources."""
+  totalEnergy: Float @deprecated(reason: "Replaced by the totalConsumedEnergy field.")
+
+  """Total of all earnings made."""
+  totalFeedInCost: Float @deprecated(reason: "Replaced by the totalEarnings field.")
+}
+
+interface UsageDataPoint {
+  type: UsageDataType!
+  startDate: DateTimeInZone!
+  endDate: DateTimeInZone!
+}
+
+enum UsageDataType {
+  ACTUAL
+  APPROXIMATE
+  PREDICTED
+  MISSING
+}
+
+"""
+Represents a date time in a timezone. String is formatted is full ISO-8601 which is the format: YYYY-MM-DDTHH:mm:ss+HH:MM with timezone always included.
+"""
+scalar DateTimeInZone
+
+enum UsageOrderBy {
+  START_DATE_ASC
+  START_DATE_DESC
+}
+
+input EnergyUsageFilter {
+  type_equal: UsageDataType
+  type_not: UsageDataType
+  type_in: [UsageDataType!]
+  type_notIn: [UsageDataType!]
+}
+
+type Property implements Node {
+  id: ID!
+  propertyId: String!
+  address: AustralianAddress!
+  service(agreementId: String!, type: ServiceType!): ServicesUnion
+  services(type: ServiceType): [ServicesUnion!]!
+}
+
+type AustralianAddress {
+  value: String!
+  components: AustralianAddressComponents!
+}
+
+union ServicesUnion = ElectricityService | GasService
+
+type GasService implements Node & Service {
+  id: ID!
+  type: ServiceType!
+  agreementId: String!
+  validFrom: DateTime
+  validTo: DateTime
+  isActive: Boolean!
+  product: GasProduct
+  meterPoint: GasMeterPoint
+  property: Property
+  usage(timeUnit: UsageTimeUnit!, startDate: DateTime!, endDate: DateTime!, orderBy: UsageOrderBy, filter: EnergyUsageFilter): EnergyUsage!
+  availableUsageTimeUnits: [UsageTimeUnit!]!
+}
+
+type Account implements Node {
+  id: ID!
+  accountNumber: String!
+  salesId: String
+  status: AccountStatus!
+  balance: Int
+  service(agreementId: String!, type: ServiceType!): ServicesUnion
+  services(type: ServiceType): [ServicesUnion!]!
+  property(propertyId: String!): Property
+  properties: [Property!]!
+}
+
+enum AccountStatus {
+  ACTIVE
+  DORMANT
+  ENROLMENT_ERROR
+  ENROLMENT_REJECTED
+  INCOMPLETE
+  PENDING
+  WITHDRAWN
+}
+
+type KrakenUser implements Node & User {
+  id: ID!
+  type: UserType!
+  name: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  mobile: String
+  landline: String
+  dateOfBirth: PlainDate
+}
+
+type Query {
+  applicationInfo: ApplicationInfo!
+  node(id: ID!): Node
+  viewer: Viewer!
+}
+
+type ApplicationInfo {
+  name: String!
+  version: String!
+  environment: String!
+}
+
+type Viewer {
+  id: ID!
+  kraken: KrakenViewer
+  digital: DigitalViewer!
+  user: KrakenUser @deprecated(reason: "Moved to Viewer.kraken")
+  account(accountNumber: String!): Account @deprecated(reason: "Moved to Viewer.kraken")
+  accounts: [Account!]! @deprecated(reason: "Moved to Viewer.kraken")
+  service(agreementId: String!, type: ServiceType!): ServicesUnion @deprecated(reason: "Moved to Viewer.kraken")
+  services(type: ServiceType): [ServicesUnion!]! @deprecated(reason: "Moved to Viewer.kraken")
+  property(propertyId: String!): Property @deprecated(reason: "Moved to Viewer.kraken")
+  properties: [Property!]! @deprecated(reason: "Moved to Viewer.kraken")
+}
+
+type KrakenViewer {
+  id: ID!
+  user: KrakenUser
+  account(accountNumber: String!): Account
+  accounts: [Account!]!
+  service(agreementId: String!, type: ServiceType!): ServicesUnion
+  services(type: ServiceType): [ServicesUnion!]!
+  property(propertyId: String!): Property
+  properties: [Property!]!
+}
+
+type DigitalViewer {
+  id: ID!
+  user: DigitalUser
+  accounts: [DigitalAccount!]!
+  services: [DigitalService!]!
+  features: [Feature!]!
+  addresses: [DigitalAddress!]!
+}

@@ -1,0 +1,27 @@
+{
+  "version": "1.22.0",
+  "platform": "kraken",
+  "page": {
+    "route": "/my",
+    "apps": ["<app>"],
+    "pageData": {
+      "actionBar": {
+        "hidden": false
+      },
+      "background": "gray",
+      "newrelic": {
+        "nonprod": {
+          "applicationId": "713194907"
+        },
+        "prod": {
+          "applicationId": "713197338"
+        }
+      },
+      "authenticated": true
+    },
+    "config": {
+      "title": "My Account",
+      "adobeTarget": "launch"
+    }
+  }
+}

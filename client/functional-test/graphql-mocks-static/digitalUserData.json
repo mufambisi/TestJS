@@ -1,0 +1,56 @@
+{
+  "PlainDate": "2021-06-29",
+  "DateTime": "2021-06-29T13:01:38.000Z",
+  "DateTimeInZone": "2021-06-29T13:01:38+10:00",
+  "Timezone": "UTC",
+  "Query": {
+    "viewer": {
+      "digital": {
+        "accounts": [
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjUxOTZkNGMzLWVjZGUtNDA3Mi1hMzVjLWIxYzY4M2E3OGExOCJ9",
+            "type": "KRAKEN",
+            "accountId": "A-F9074CE5",
+            "product": "ELECTRICITY",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjExZWJmNWE5LTVmZjEtMDJjOS04N2M0LTA2NzM0YjA1MDgzZSJ9",
+            "type": "LPG",
+            "accountId": "0108504305",
+            "product": "LPG",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "eyJ0eXBlIjoiRGlnaXRhbEFjY291bnQiLCJpZCI6IjExZWJmNWE5LTVmZjEtMDJjOS04N2M0LTA2NzM0YjA1MDabEFJ9",
+            "type": "BROADBAND",
+            "accountId": "1111111",
+            "product": "BROADBAND",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "11000111",
+            "type": "OHM",
+            "accountId": "11000111",
+            "product": "OHM",
+            "status": "ACTIVE"
+          }
+        ],
+        "features": [
+          {
+            "id": "11000112",
+            "type": "BATTERY",
+            "featureId": "123_500003528527",
+            "status": "ACTIVE"
+          },
+          {
+            "id": "11000114",
+            "type": "EV",
+            "featureId": "123_500003528544",
+            "status": "ACTIVE"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,5129 @@
+"""
+This class inherits from multiple Queries as we add more apps to the API.
+"""
+type Query {
+  surchargeAmount(accountNumber: String!, amount: Int!, ledgerId: Int, cardScheme: CardPaymentNetwork, cardType: CardType): Int!
+  isFeeEligible(accountNumber: String!): Boolean!
+
+  """
+   
+  Fetch electricity meter readings for a given account and meter.
+  Optionally include readings that have been quarantined (these are
+  excluded by default)
+  
+  Each reading here is actually a group of all the readings
+  which happened at the same date and time on that meter.
+  
+  The reason for this is that end users typically don't care
+  about registers, and simply want to view all their meter
+  readings in chronological order.
+   
+  
+   
+  
+  This field is a connection type. Connections are used to implement [cursor based pagination](https://graphql.org/learn/pagination/#pagination-and-edges).
+  
+   
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  electricityMeterReadings(
+    accountNumber: String
+    meterId: String!
+    includeQuarantined: Boolean = false
+
+    """Start time/date for the date range to filter readings"""
+    startAt: String
+
+    """End time/date for the date range to filter readings"""
+    endAt: String
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): ElectricityMeterReadingConnectionTypeConnection
+
+  """
+   
+  Fetch daily summaries of electricity meter readings for a
+  given account and meter.
+  Optionally include readings that have been quarantined (these are
+  excluded by default).
+  Days where no meter readings occurred will be omitted.
+  This query has been deprecated, please use the electricityMeterReadingsSummary()
+  instead.
+   
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  electricityMeterReadingsDaily(
+    accountNumber: String
+    meterId: String!
+
+    """Readings which happened before the start of this day will be excluded."""
+    startDate: Date!
+
+    """Readings which happened after the end of this day will be excluded."""
+    endDate: Date!
+    includeQuarantined: Boolean = false
+  ): [DailyElectricityMeterReadingType] @deprecated(reason: "Please use the readingsSummary() property from the ElectricityRegisterType object instead.")
+
+  """
+   The currently authenticated user. 
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  viewer: AccountUserType
+  property(id: ID!): PropertyType
+  properties(accountNumber: String!, active: Boolean): [PropertyType]
+  electricityProduct(code: String!, networkTariffCode: String): Product @deprecated(reason: "Use `product` instead")
+  product(
+    code: String!
+
+    """Applies only for Electricity products"""
+    networkTariffCode: String
+  ): Product
+
+  """Get details about an account."""
+  account(accountNumber: String!): AccountType
+
+  """Get the customer feedback survey question."""
+  question(formId: Int!): String
+
+  """Get default raw score for a customer feedback form."""
+  defaultRawScore(formId: Int!): Int
+
+  """The ID of the object"""
+  node(id: ID!): Node
+}
+
+"""An enumeration."""
+enum CardPaymentNetwork {
+  MASTERCARD
+  VISA
+  AMEX
+  JCB
+  DISCOVER
+}
+
+"""An enumeration."""
+enum CardType {
+  CREDIT
+  DEBIT
+}
+
+"""
+
+
+This field is a connection type. Connections are used to implement [cursor based pagination](https://graphql.org/learn/pagination/#pagination-and-edges).
+
+
+"""
+type ElectricityMeterReadingConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ElectricityMeterReadingConnectionTypeEdge]!
+}
+
+"""
+The Relay compliant `PageInfo` type, containing data necessary to paginate this connection.
+"""
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+}
+
+"""
+A Relay edge containing a `ElectricityMeterReadingConnectionType` and its cursor.
+"""
+type ElectricityMeterReadingConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: ElectricityMeterReadingType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+union ElectricityMeterReadingType = ElectricityAccumulationMeterReadingType | ElectricityIntervalMeterReadingType
+
+"""An electricity meter reading. Accumulated usage."""
+type ElectricityAccumulationMeterReadingType implements MeterReading & AccumulationMeterReading {
+  readAt: DateTime
+  registers: [RegisterReading]
+}
+
+"""Interface for an AUS meter reading."""
+interface MeterReading {
+  registers: [RegisterReading]
+}
+
+type RegisterReading {
+  identifier: String
+  name: String
+  value: String
+  digits: Int
+  isQuarantined: Boolean
+  qualityFlag: QualityFlag
+
+  """
+  Acceptable values: 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 51, 52, 53, 54, 55, 56, 57, 58, 61, 62, 63, 64, 65, 66, 67, 68, 71, 72, 73, 74, 75, KI, KP, KE, KA
+  """
+  qualityMethod: String
+}
+
+"""An enumeration."""
+enum QualityFlag {
+  A
+  E
+  F
+  N
+  S
+  V
+}
+
+"""Interface for an AUS accumulation meter reading."""
+interface AccumulationMeterReading {
+  registers: [RegisterReading]
+  readAt: DateTime
+}
+
+"""
+The `DateTime` scalar type represents a DateTime
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar DateTime
+
+"""An electricity meter reading. Usage within a time window."""
+type ElectricityIntervalMeterReadingType implements MeterReading & IntervalMeterReading {
+  startAt: DateTime
+  endAt: DateTime
+  registers: [RegisterReading]
+}
+
+"""Interface for an AUS interval meter reading."""
+interface IntervalMeterReading {
+  registers: [RegisterReading]
+  startAt: DateTime
+  endAt: DateTime
+}
+
+"""
+
+Meter readings grouped by the date on which they occurred.
+
+Interval readings which occur on the same date are summed.
+
+Accumulation readings do not occur the same date.
+
+"""
+type DailyElectricityMeterReadingType {
+  date: Date!
+  registerId: String!
+  value: Decimal!
+}
+
+"""
+The `Date` scalar type represents a Date
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar Date
+
+"""The `Decimal` scalar type represents a python Decimal."""
+scalar Decimal
+
+"""
+User objects are the core of the authentication system. They typically represent a customer who manages a portfolio of one or more accounts.
+"""
+type AccountUserType {
+  """"""
+  id: ID!
+  accounts: [AccountInterface]
+
+  """"""
+  givenName: String!
+
+  """"""
+  familyName: String!
+
+  """"""
+  email: String!
+
+  """"""
+  mobile: String!
+
+  """"""
+  landline: String!
+
+  """
+  How this person wants us to refer to them in the third person, e.g. 'she/her', 'he/him', 'they/them'. Never guess this; leave it blank if not explicitly provided.
+  """
+  pronouns: String
+  displayName: String @deprecated(reason: "Please use fullName instead of this field.")
+
+  """We recommend you use preferredName or fullName instead of this field."""
+  firstName: String @deprecated(reason: "Use 'givenName' instead")
+
+  """We recommend you use preferredName or fullName instead of this field."""
+  lastName: String @deprecated(reason: "Use 'familyName' instead")
+  fullName: String
+  preferredName: String
+  portfolioId: ID
+  specialCircumstances: SpecialCircumstancesType
+  preferences: AccountUserCommsPreferences
+  dateOfBirth: Date
+  landlinePhoneNumber: String @deprecated(reason: "Use 'landline' instead.")
+  alternativePhoneNumbers: [String]
+  hasFamilyIssues: Boolean
+}
+
+interface AccountInterface {
+  """The current status of the account"""
+  status: AccountStatus
+
+  """The current account balance."""
+  balance: Int
+
+  """Unique reference number from a 3rd party enrolment."""
+  urn: String
+
+  """The billing name of the account."""
+  billingName: String
+
+  """The billing address of the account."""
+  billingAddress: String
+  billingAddressLine1: String
+  billingAddressLine2: String
+  billingAddressLine3: String
+  billingAddressLine4: String
+  billingAddressLine5: String
+  billingAddressPostcode: String
+  billingCountryCode: String
+  billingDeliveryPointIdentifier: String
+
+  """List of billing address lines."""
+  splitBillingAddress: [String]
+
+  """A code that uniquely identifies the account."""
+  number: String
+
+  """Whether the account can request a credit refund."""
+  canRequestRefund: Boolean
+
+  """The payments made into an account from a payment instruction."""
+  payments(status: AccountPaymentStatusOptions, before: String, after: String, first: Int, last: Int): AccountPaymentConnectionTypeConnection
+
+  """The repayments that have been requested for this account."""
+  repayments(
+    """Only return repayments whose status matches one of these statuses"""
+    statuses: [AccountRepaymentStatusOptions]
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): AccountRepaymentConnectionTypeConnection
+
+  """
+  The schedules that describe how we would expect to take payments for an account on a given month.
+  """
+  paymentSchedules(activeOnDate: Date, active: Boolean, canCreatePayment: Boolean, reason: PaymentScheduleReasonOptions, before: String, after: String, first: Int, last: Int): PaymentScheduleConnectionTypeConnection
+
+  """
+  A list displaying the payment forecast for an account. The list starts from today's date (inclusive).
+  """
+  paymentForecast(
+    """The end date to retrieve forecasts for. This end date is inclusive."""
+    dateTo: Date!
+
+    """
+    The ledger to return payment forecasts from. Defaults to the main ledger when no ID is passed.
+    """
+    ledgerId: Int
+  ): [PaymentForecastType]
+
+  """The referrals created by this account."""
+  referrals(before: String, after: String, first: Int, last: Int): ReferralConnectionTypeConnection
+
+  """The referral schemes currently active for this account."""
+  activeReferralSchemes: ReferralSchemeTypes
+
+  """Fetch transactions that have taken place on the account."""
+  transactions(
+    """Return these transaction types only."""
+    transactionTypes: [TransactionTypeFilter] = []
+
+    """The ledger to return transactions from."""
+    ledgerId: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): TransactionConnectionTypeConnection
+  provisionalTransactions(before: String, after: String, first: Int, last: Int): ProvisionalTransactionConnectionTypeConnection
+
+  """Fetch annual statements for the account."""
+  annualStatements(before: String, after: String, first: Int, last: Int): AnnualStatementConnectionTypeConnection
+
+  """Fetch issued bills (invoices/statements) for the account."""
+  bills(
+    """Include bills without PDFs"""
+    includeBillsWithoutPDF: Boolean = false
+
+    """
+    
+    Include open statements. This flag needs to be used along with
+    includeBillsWithoutPDF=false otherwise results will prove unexpected.
+    
+    """
+    includeOpenStatements: Boolean = false
+
+    """Only include bills emailed to the current user's email"""
+    onlyCurrentEmail: Boolean = false
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): BillConnectionTypeConnection
+
+  """Information about the account's billing cycle."""
+  billingOptions: BillingOptionsType
+
+  """Fetch a specific issued bill (invoice/statement) for the account."""
+  bill(id: ID, billType: BillTypeEnum): BillInterface
+
+  """The direct debit instructions of the account"""
+  directDebitInstructions(
+    """Filter the direct debit instructions by status"""
+    statuses: [DirectDebitInstructionStatus]
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): DirectDebitInstructionConnectionTypeConnection
+
+  """The account events that were recorded for the account."""
+  events(
+    """Filter the account events by their type."""
+    eventTypes: [AccountEventType]
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): AccountEventConnectionTypeConnection
+
+  """
+  Applications by this account to become our customer. More recent applications will be listed first.
+  """
+  applications(before: String, after: String, first: Int, last: Int): AccountApplicationConnectionTypeConnection
+
+  """The type of account."""
+  accountType: AccountTypeChoices
+
+  """The method the account has specified they prefer we contact them"""
+  commsDeliveryPreference: CommsDeliveryPreference
+  communicationDeliveryPreference: String @deprecated(reason: "Use `commsDeliveryPreference` instead")
+
+  """Account references linked to this account."""
+  references: [AccountReferenceType]
+
+  """
+  The maximum amount a customer is allowed to request as a refund and the reason why that's the maximum amount.
+  """
+  maximumRefund: MaximumRefundType
+}
+
+enum AccountStatus {
+  """
+  A pending account is one that has been created but no registrations have started.
+  """
+  PENDING
+
+  """Account requires processes to be completed before supply can be set up"""
+  INCOMPLETE
+
+  """Withdrawn before supply started"""
+  WITHDRAWN
+
+  """Supply could have started, be ongoing or ended."""
+  ACTIVE
+
+  """
+  An error occurred when we tried to enroll a meter point. This may be deprecated in future in favour of exposing this through enrollment property of a meter point.
+  """
+  ENROLMENT_ERROR
+
+  """
+  Meter point enrollment was rejected. This may be deprecated in future in favour of exposing this through enrollment property of a meter point.
+  """
+  ENROLMENT_REJECTED
+
+  """Dormant. Users should not be able to log into dormant accounts."""
+  DORMANT
+}
+
+type AccountPaymentConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [AccountPaymentConnectionTypeEdge]!
+}
+
+"""
+A Relay edge containing a `AccountPaymentConnectionType` and its cursor.
+"""
+type AccountPaymentConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: AccountPaymentType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type AccountPaymentType {
+  """"""
+  id: ID!
+
+  """Amount of payment in pence"""
+  amount: Int!
+
+  """The date this payment is scheduled to be debited"""
+  paymentDate: Date!
+
+  """"""
+  reference: String!
+
+  """"""
+  transactionType: String!
+
+  """The current status of the payment"""
+  status: AccountPaymentStatusOptions
+
+  """Surchage amount generated by this payment."""
+  surchargeAmount: Int
+}
+
+"""An enumeration."""
+enum AccountPaymentStatusOptions {
+  """
+  The payment has been scheduled for collection and the customer has been notified. While a payment is scheduled, it can still be deleted.
+  """
+  SCHEDULED
+
+  """The payment has been submitted. From this point it cannot be altered."""
+  PENDING
+
+  """
+  The payment has been approved by the merchant and added to your Kraken account.
+  """
+  CLEARED
+
+  """The payment failed permanently."""
+  FAILED
+
+  """
+  A payment promise has been created, but it has not left the customers bank account.
+  """
+  PROMISED
+
+  """
+  The payment has been made successfully and applied to the Kraken balance.
+  """
+  FULFILLED
+
+  """The payment promise has been broken."""
+  PROMISE_BROKEN
+
+  """Payments made in a previous system and then imported into Kraken."""
+  HISTORIC
+
+  """
+  Third Party payments are those recorded for financial purposes in a different system but should be added to statements.
+  """
+  THIRD_PARTY
+
+  """
+  The initial state of a payment in Kraken. It should be scheduled with a payment vendor in the future.
+  """
+  REQUESTED
+}
+
+type AccountRepaymentConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [AccountRepaymentConnectionTypeEdge]!
+}
+
+"""
+A Relay edge containing a `AccountRepaymentConnectionType` and its cursor.
+"""
+type AccountRepaymentConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: AccountRepaymentType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type AccountRepaymentType {
+  """Amount of payment in pence"""
+  amount: Int!
+
+  """The date this payment is scheduled to be debited"""
+  paymentDate: Date!
+
+  """"""
+  id: ID!
+
+  """The current status of the repayment"""
+  status: AccountRepaymentStatusOptions
+}
+
+"""An enumeration."""
+enum AccountRepaymentStatusOptions {
+  """The request for a repayment has been received but not actioned yet."""
+  REQUESTED
+
+  """The repayment has been approved but not made yet."""
+  APPROVED
+
+  """
+  The payment has been submitted to the merchant. It is still possible for this repayment to fail.
+  """
+  SUBMITTED
+
+  """
+  The repayment failed permanently. This could be because of technical issues, or if the merchant rejects the payment for some reason. The payment will need to be retried by ops.
+  """
+  FAILED
+
+  """
+  The repayment has been made to the merchant to be sent to the customer. This is a terminal state, we don't get any further confirmation.
+  """
+  PAID
+
+  """
+  Third Party payments are those recorded for financial purposes in a different system but should be added to statements.
+  """
+  THIRD_PARTY
+
+  """Payments made in a previous system and then imported into Kraken."""
+  HISTORIC
+}
+
+type PaymentScheduleConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [PaymentScheduleConnectionTypeEdge]!
+}
+
+"""
+A Relay edge containing a `PaymentScheduleConnectionType` and its cursor.
+"""
+type PaymentScheduleConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: PaymentScheduleType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+An object that represents when we have agreed to take payments from a payment instruction.
+"""
+type PaymentScheduleType {
+  """"""
+  id: ID!
+
+  """"""
+  scheduleType: PaymentScheduleScheduleType!
+
+  """The reason the payment schedule was created."""
+  reason: PaymentScheduleReasonOptions
+
+  """"""
+  paymentDay: Int!
+
+  """The frequency of the payment schedule"""
+  paymentFrequency: PaymentFrequencyOptions
+
+  """"""
+  paymentFrequencyMultiplier: Int!
+
+  """"""
+  paymentAmount: Int!
+
+  """"""
+  paymentAdequacyAdjustment: Int
+
+  """"""
+  paymentAdequacyAdjustmentExpiryDate: Date
+
+  """"""
+  isVariablePaymentAmount: Boolean!
+
+  """"""
+  validFrom: Date!
+
+  """"""
+  validTo: Date
+
+  """"""
+  isPaymentHoliday: Boolean!
+
+  """"""
+  paymentHolidayReason: String!
+
+  """
+  The sum of the payment adequacy contributions on the payment schedule that are expected to be taken before the debt repayment is complete.
+  """
+  totalDebtAmount: Int
+}
+
+"""An enumeration."""
+enum PaymentScheduleScheduleType {
+  """Manual payment"""
+  BACS_TRANSFER
+
+  """Card payment"""
+  CARD_PAYMENT
+
+  """Direct debit"""
+  DIRECT_DEBIT
+}
+
+"""An enumeration."""
+enum PaymentScheduleReasonOptions {
+  """The default value for usual account payments."""
+  GENERAL_ACCOUNT_PAYMENT
+
+  """
+  A payment schedule created to take a payment around the supply start date of a meterpoint to help prevent accounts accruing debt.
+  """
+  SSD_PAYMENT
+
+  """
+  A payment schedule created to take the final payment when an account is closed.
+  """
+  FINAL_PAYMENT
+
+  """
+  A payment schedule created to take payments to pay back a debt. These schedules typically expire once the debt has been re-payed.
+  """
+  DEBT_REPAYMENT_PLAN
+}
+
+"""An enumeration."""
+enum PaymentFrequencyOptions {
+  """Daily"""
+  Daily
+
+  """Weekly"""
+  Weekly
+
+  """Monthly"""
+  Monthly
+}
+
+type PaymentForecastType {
+  paymentNumber: Int
+  date: Date
+  amount: Int
+}
+
+type ReferralConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ReferralConnectionTypeEdge]!
+}
+
+"""A Relay edge containing a `ReferralConnectionType` and its cursor."""
+type ReferralConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: ReferralType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""Details of an account referral"""
+type ReferralType implements ReferralInterface {
+  """"""
+  id: ID!
+  referredUserName: String
+  paymentStatus: String
+  paymentDate: Date
+  referredUserJoinDate: DateTime
+  code: String
+}
+
+interface ReferralInterface {
+  referredUserName: String
+  paymentStatus: String
+  paymentDate: Date
+  referredUserJoinDate: DateTime
+  code: String
+}
+
+type ReferralSchemeTypes {
+  domestic: ReferralSchemeType
+  business: ReferralSchemeType
+  friendsAndFamily: ReferralSchemeType @deprecated(reason: "Please use domestic instead.")
+}
+
+"""
+A referral scheme is a way for one account to earn a reward for referring another. This is achieved by the referred account using a url (provided by the referring account) to sign up.
+"""
+type ReferralSchemeType {
+  """
+  A fully qualified url give people to create accounts referred by this scheme.
+  """
+  referralUrl: String
+
+  """A referral url for display purposes."""
+  referralDisplayUrl: String
+
+  """The reward amount received by the referrer."""
+  referrerRewardAmount: Int
+
+  """The reward amount received by the referred party."""
+  referredRewardAmount: Int
+
+  """The reward amount received by the referrer and the referee combined."""
+  combinedRewardAmount: Int
+
+  """
+  Whether the current account is eligible to be referred under this scheme.
+  """
+  canBeReferred: Boolean
+
+  """The unique code for the scheme."""
+  code: String
+}
+
+type TransactionConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [TransactionConnectionTypeEdge]!
+}
+
+"""A Relay edge containing a `TransactionConnectionType` and its cursor."""
+type TransactionConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: TransactionType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+Transactions are a record of money being added or subtracted from the overall account balance
+"""
+interface TransactionType {
+  id: ID
+  postedDate: Date
+
+  """Gross amount including tax whenever tax is payable."""
+  amount: Int
+
+  """
+  The customer's resulting balance in cents after this transaction has been applied.
+  """
+  balanceCarriedForward: Int
+
+  """Deprecated"""
+  isCredit: Boolean
+
+  """Deprecated"""
+  isAccountCharge: Boolean
+
+  """Deprecated"""
+  isAccountPayment: Boolean
+
+  """
+  Whether the statement this transaction is on has been held. A held statement is not sent to a customer automatically, but is instead marked for manual attention by operations staff.
+  """
+  isHeld: Boolean
+  title: String
+  statementId: ID
+}
+
+"""
+
+    Add here your filter type, e.g. MY_TYPE = "MY_TYPE". This type will come up as on option when applying a filter in
+    the transactions() query in the GraphQL API.
+    
+"""
+enum TransactionTypeFilter {
+  """Return energy charge transactions: Gas or Electricity."""
+  ENERGY_CHARGES
+}
+
+type ProvisionalTransactionConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ProvisionalTransactionConnectionTypeEdge]!
+}
+
+"""
+A Relay edge containing a `ProvisionalTransactionConnectionType` and its cursor.
+"""
+type ProvisionalTransactionConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: ProvisionalTransactionType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+A provisional transaction represents some debit or credit to or from a customer's account which we cannot yet finalise for some reason, but which is still useful to keep a note of, and display to the customer. Provisional transactions are purely to give guidance in the absence of finalised information. We therefore only return provisional transactions that have not been finalised. When a transaction is finalised, it is available through the `transactions` field.
+"""
+type ProvisionalTransactionType {
+  """"""
+  id: ID!
+
+  """
+  A user readable string that indicates what this transaction relates to.
+  """
+  title: String
+
+  """
+  The amount in pence for this provisional transaction. It will be negative for charges, positive for credits.
+  """
+  amount: Int
+
+  """The date at which the charge should be applied to the account."""
+  date: Date
+}
+
+type AnnualStatementConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [AnnualStatementConnectionTypeEdge]!
+}
+
+"""
+A Relay edge containing a `AnnualStatementConnectionType` and its cursor.
+"""
+type AnnualStatementConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: AnnualStatementType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+Annual statements that are sent to the account. They summarize important information about usage and tariffs.
+"""
+type AnnualStatementType {
+  """"""
+  periodStartsAt: DateTime!
+
+  """"""
+  periodEndsAt: DateTime!
+  id: ID
+  pdfUrl: String
+}
+
+"""
+
+
+This field is a connection type. Connections are used to implement [cursor based pagination](https://graphql.org/learn/pagination/#pagination-and-edges).
+
+
+"""
+type BillConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [BillConnectionTypeEdge]!
+}
+
+"""A Relay edge containing a `BillConnectionType` and its cursor."""
+type BillConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: BillInterface
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+interface BillInterface {
+  id: ID
+  billType: BillTypeEnum
+  fromDate: Date
+  toDate: Date
+
+  """
+  Requesting this field generates a temporary URL at which bill is available.
+          This URL will expire after approximately an hour.  It is intended for redirection purposes,
+          NOT persistence in any form (e.g. inclusion in emails or the body of a web page).
+          This field can raise an error with errorClass NOT_FOUND if the bill document has not
+          been created/issued yet.
+  
+  
+          Expected `errorClass`:
+  - NOT_FOUND
+  - SERVICE_AVAILABILITY
+  """
+  temporaryUrl: String
+
+  """The date the bill was sent to the customer."""
+  issuedDate: Date
+}
+
+enum BillTypeEnum {
+  STATEMENT
+  INVOICE
+  CREDIT_NOTE
+  PRE_KRAKEN
+}
+
+"""Information about an account's billing schedule."""
+type BillingOptionsType {
+  """
+  The day of the month on which the account's billing period should start.
+  """
+  periodStartDay: Int
+
+  """"""
+  periodLength: AccountBillingOptionsPeriodLength
+
+  """
+  If true, this account is billed on specific day of a regular cycle. If false, the billing schedule is flexible, depending on when meter readings are submitted.
+  """
+  isFixed: Boolean!
+
+  """The date on which the current billing cycle started."""
+  currentBillingPeriodStartDate: Date
+
+  """The date on which the current billing cycle will end."""
+  currentBillingPeriodEndDate: Date
+
+  """
+  The next date on which this account will next be billed. This is the same as the start date for their next bill cycle. Null if the account is on flexible billing.
+  """
+  nextBillingDate: Date
+}
+
+"""An enumeration."""
+enum AccountBillingOptionsPeriodLength {
+  """Monthly"""
+  MONTHLY
+
+  """Quarterly"""
+  QUARTERLY
+}
+
+type DirectDebitInstructionConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [DirectDebitInstructionConnectionTypeEdge]!
+}
+
+"""
+A Relay edge containing a `DirectDebitInstructionConnectionType` and its cursor.
+"""
+type DirectDebitInstructionConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: DirectDebitInstructionType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""Direct Debit Instructions"""
+type DirectDebitInstructionType {
+  """"""
+  id: ID!
+
+  """"""
+  status: String!
+
+  """"""
+  sortCode: String!
+
+  """"""
+  iban: String!
+
+  """"""
+  accountHolder: String!
+
+  """"""
+  instructionType: String
+
+  """"""
+  cardPaymentNetwork: String
+
+  """"""
+  cardExpiryMonth: Int
+
+  """"""
+  cardExpiryYear: Int
+
+  """The last four digits of the account number."""
+  lastFourDigitsOfAccountNumber: String @deprecated(reason: "Use 'masked_account_identifier' for a masked reference to the instruction. This field is misleading, as it's only the last 3 digits that are stored. We'll remove this field on 14/03/2020.")
+
+  """A masked reference to a recurring payment method."""
+  maskedAccountIdentifier: String
+
+  """A masked version of the IBAN."""
+  maskedIban: String
+}
+
+"""An enumeration."""
+enum DirectDebitInstructionStatus {
+  """The instruction is active and can be used to take payments."""
+  ACTIVE
+
+  """The instruction has not yet been set up."""
+  PROVISIONAL
+
+  """The instruction could not be set up with the vendor."""
+  FAILED
+
+  """The account for this instruction was closed."""
+  ACCOUNT_CLOSED
+}
+
+type AccountEventConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [AccountEventConnectionTypeEdge]!
+}
+
+"""A Relay edge containing a `AccountEventConnectionType` and its cursor."""
+type AccountEventConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: AccountEvent
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+union AccountEvent = EmailEventType
+
+type EmailEventType implements Node {
+  """The ID of the object."""
+  id: ID!
+
+  """"""
+  eventType: String!
+
+  """"""
+  occurredAt: DateTime!
+
+  """
+  Email message of the email event. Returns null for message's sent/received by other user's on the account
+  """
+  message: EmailType
+}
+
+"""An object with an ID"""
+interface Node {
+  """The ID of the object."""
+  id: ID!
+}
+
+type EmailType {
+  """"""
+  id: ID!
+
+  """"""
+  sentAt: DateTime
+
+  """Subject line of the email message."""
+  subject: String
+
+  """Attachments of the email message."""
+  attachments: [EmailAttachmentType]
+  textBody: String
+  htmlBody: String
+
+  """Email sender"""
+  sender: String
+
+  """Email recipient"""
+  recipient: String
+}
+
+type EmailAttachmentType {
+  """"""
+  id: ID!
+
+  """"""
+  filename: String!
+
+  """
+  Temporary URL at which the email attachment is available. This URL will expire after approximately an hour. It is intended for redirection purposes, NOT persistence in any form (e.g. inclusion in emails or the body of a web page).
+  """
+  temporaryUrl: String
+}
+
+"""An enumeration."""
+enum AccountEventType {
+  """The email messages that were sent by the account."""
+  EMAIL_SENT
+
+  """The email messages that were received by the account."""
+  EMAIL_RECEIVED
+}
+
+type AccountApplicationConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [AccountApplicationConnectionTypeEdge]!
+}
+
+"""
+A Relay edge containing a `AccountApplicationConnectionType` and its cursor.
+"""
+type AccountApplicationConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: AccountApplicationType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type AccountApplicationType {
+  """"""
+  status: AccountApplicationStatus!
+
+  """"""
+  salesChannel: AccountApplicationSalesChannel
+
+  """
+  The sales subchannel used when signing up. This could for example be a price comparison site.
+  """
+  salesSubchannel: String
+
+  """Date at which this account decided to switch to us."""
+  dateOfSale: Date
+
+  """
+  Last day of the cooling off period. Barring changes or objections, the account will be gained on the next business day after this date. This value will only be returned for current applications.
+  """
+  coolingOffEndDate: Date
+
+  """
+  Whether this account application represents a migration into the current system or a regular gain.
+  """
+  isMigrated: Boolean
+
+  """
+  The source system for a migrated account. This could be the previous supplier or the previous account management system.
+  """
+  migrationSource: String
+}
+
+"""An enumeration."""
+enum AccountApplicationStatus {
+  """Current"""
+  CURRENT
+
+  """Failed"""
+  FAILED
+
+  """Historic"""
+  HISTORIC
+}
+
+"""An enumeration."""
+enum AccountApplicationSalesChannel {
+  """Direct"""
+  DIRECT
+
+  """Price comparison site"""
+  PRICE_COMPARISON
+
+  """Telesales"""
+  TELESALES
+
+  """Digital telesales"""
+  DIGI_TELESALES
+
+  """Events"""
+  EVENTS
+
+  """Field sales"""
+  FIELD_SALES
+
+  """Aggregator"""
+  AGGREGATOR
+
+  """Partnerships"""
+  PARTNERSHIPS
+
+  """New tenant"""
+  NEW_TENANT
+
+  """Move in"""
+  MOVE_IN
+
+  """Workplace pop-up"""
+  WORKPLACE_POP_UP
+
+  """Broker"""
+  BROKER
+
+  """Parent power"""
+  PARENT_POWER
+
+  """Supplier of last resort"""
+  SUPPLIER_OF_LAST_RESORT
+
+  """Acquisition"""
+  ACQUISITION
+
+  """Landlord"""
+  LANDLORD
+}
+
+"""An enumeration."""
+enum AccountTypeChoices {
+  """An account designed to supply/bill business premises."""
+  BUSINESS
+
+  """An account designed to supply/bill domestic premises."""
+  DOMESTIC
+
+  """
+  An account created when we supply a business premises but do not have details for the occupants.
+  """
+  BUSINESS_OCCUPIER
+
+  """
+  An account created when we supply a domestic premises but do not have details for the occupants.
+  """
+  OCCUPIER
+}
+
+"""The method the account has specified they prefer we contact them"""
+enum CommsDeliveryPreference {
+  EMAIL
+  POSTAL_MAIL
+}
+
+type AccountReferenceType {
+  """"""
+  namespace: String!
+
+  """The unique identifier for the account."""
+  value: String!
+
+  """When this was created in our database."""
+  createdAt: DateTime!
+
+  """"""
+  updatedAt: DateTime!
+}
+
+type MaximumRefundType {
+  """The maximum amount available to be requested as a refund."""
+  amount: Int
+
+  """
+  The reason why a specific amount is the maximum available to be requested as a refund.
+  """
+  reasonToRecommendAmount: MaximumRefundReasonChoices
+
+  """
+  The recommended minimum balance an account should have when asking for a refund.
+  """
+  recommendedBalance: Int
+}
+
+"""An enumeration."""
+enum MaximumRefundReasonChoices {
+  """
+  Maximum refund is equal to the current balance minus the account recommended balance.
+  """
+  MAX_AVAILABLE_AMOUNT
+
+  """
+  Maximum refund is equal to the total amount the customer has paid using the current account Direct Debit instruction.
+  """
+  TOTAL_AMOUNT_PAID_VIA_ACTIVE_DDI
+
+  """
+  Maximum refund is equal to the maximum refund amount allowed to be requested via the dashboard.
+  """
+  MAX_ALLOWED_TO_REQUEST_VIA_DASHBOARD
+}
+
+"""Information about the special circumstances that relate to a user."""
+type SpecialCircumstancesType {
+  """
+  Whether the user has consented for their data to be given to the appropriate industry or regulatory bodies. We typically only ask for this once, so this field can be used to decide whether to ask the user for their initial consent.
+  """
+  isSharingConsentGiven: Boolean
+  records: [SpecialCircumstanceRecordUnion]
+}
+
+union SpecialCircumstanceRecordUnion = SpecialCircumstanceRecordType | TemporarySpecialCircumstanceRecordType
+
+"""
+Any special circumstances that the user has notified us about, which may entitle them to some specialist services.
+"""
+type SpecialCircumstanceRecordType {
+  id: ID
+  summary: String
+  internalCode: String
+}
+
+"""
+Any special circumstances that the user has notified us about, which may entitle them to some specialist services. These circumstances have an end date,after which they will not longer apply. Having young children is an example of thisin the UK.
+"""
+type TemporarySpecialCircumstanceRecordType {
+  id: ID
+  summary: String
+  internalCode: String
+  expiryDate: Date
+}
+
+"""Information about the preferences set up for a user."""
+type AccountUserCommsPreferences {
+  """
+  Whether a user has opted in to receive messages from the client or client group. For example, for Octopus Energy this describes whether a user is opted in to offers from Octopus Investments.
+  """
+  isOptedInToClientMessages: Boolean
+
+  """
+  Whether a user has opted in to receive messages offering discounts or other servicesnot directly related to the services the client provides.
+  """
+  isOptedInToOfferMessages: Boolean
+
+  """
+  Whether a user has opted in to receive messages we recommend they read, but are not vital to the utilities the client provides. For example, these could be reminders that the client will take a payment.
+  """
+  isOptedInToRecommendedMessages: Boolean
+
+  """
+  Whether a user has opted in to receive messages updating them on client activities.
+  """
+  isOptedInToUpdateMessages: Boolean
+
+  """
+  Whether a user has opted in to receive messages from the client's preferred third parties.
+  """
+  isOptedInToThirdPartyMessages: Boolean
+
+  """What format the user would like to receive their emails in."""
+  emailFormat: EmailFormats
+
+  """
+  Whether a user has opted to have inverted colours in their emails. This is currently only relevant to the Octopus Energy brand, whose emails have a dark background by default.
+  """
+  isUsingInvertedEmailColours: Boolean
+
+  """
+  This setting allows the user to adjust the default font size of the communications sent to them.
+  """
+  fontSizeMultiplier: Float
+
+  """
+  Whether the user has opted in to receive meter reading confirmation emails.
+  """
+  isOptedInMeterReadingConfirmations: Boolean
+
+  """Whether the user has opted in to receive SMS messages."""
+  isOptedInToSmsMessages: Boolean
+
+  """Song which will be used as hold music for the user."""
+  preferredHoldMusic: Songs
+}
+
+"""An enumeration."""
+enum EmailFormats {
+  """Plain text emails."""
+  TEXT
+
+  """Full featured HTML emails with images and branding."""
+  HTML
+}
+
+"""An enumeration."""
+enum Songs {
+  """No Song Preferred"""
+  NO_SONG_PREFERRED
+}
+
+type PropertyType implements PropertyInterface {
+  id: String
+
+  """"""
+  postcode: String!
+
+  """"""
+  addressLine1: String!
+
+  """"""
+  addressLine2: String!
+
+  """"""
+  addressLine3: String!
+
+  """"""
+  addressLine4: String!
+
+  """"""
+  addressLine5: String!
+
+  """The address of the property, formatted into a single string"""
+  address: String
+
+  """List of address lines."""
+  splitAddress: [String]
+
+  """
+  Time periods during which the property is associated with an account. Useful to display information about house-moves, as performing a move out of a property will set the end date for the occupancy period.
+  """
+  occupancyPeriods: [OccupancyPeriodType]
+
+  """
+  Coordinates for the property, useful for displaying the property on a map.
+  """
+  coordinates: CoordinatesType
+  electricityMeterPoints: [MeterPointType] @deprecated(reason: "Use `meter_points` instead.")
+  meterPoints: [MeterPointInterface]
+
+  """
+  Estimated daily energy usage for households of different
+  sizes in this property's neighbourhood (selected by
+  postcode) for the season which overlaps the current
+  billing period.
+  
+  If the property isn't on supply, or isn't on a fixed
+  billing schedule, then we will return the benchmarks which
+  would apply today instead.
+  
+  Returns null if we don't have benchmark data for this
+  combination of postcode and season.
+  """
+  benchmarks: [EnergyBenchmarkType]
+}
+
+interface PropertyInterface {
+  id: String
+
+  """The address of the property, formatted into a single string"""
+  address: String
+
+  """List of address lines."""
+  splitAddress: [String]
+
+  """
+  Time periods during which the property is associated with an account. Useful to display information about house-moves, as performing a move out of a property will set the end date for the occupancy period.
+  """
+  occupancyPeriods: [OccupancyPeriodType]
+
+  """
+  Coordinates for the property, useful for displaying the property on a map.
+  """
+  coordinates: CoordinatesType
+}
+
+"""An occupancy period for a property."""
+type OccupancyPeriodType {
+  effectiveFrom: DateTime
+  effectiveTo: DateTime
+}
+
+type CoordinatesType {
+  latitude: Float
+  longitude: Float
+}
+
+"""
+Note that this is electricity specific. Use `GasMeterPointType` for
+gas meter points.
+"""
+type MeterPointType implements MeterPointInterface {
+  id: Int
+  meters(id: Int, includeInactive: Boolean): [ElectricityMeterType]
+
+  """The Financial Responsible Market Participant status"""
+  status: String @deprecated(reason: "Use `supply_status` instead.")
+
+  """
+  Details about an enrolment of this meter point. Will be null if no enrolment is taking place.
+  """
+  enrolment: EnrolmentType
+  identifier: String
+
+  """The Financial Responsible Market Participant status"""
+  supplyStatus: KrakenStatus
+
+  """
+  A list of agreements belonging to an account that is linked to the logged in user.
+  """
+  agreements(includeInactive: Boolean = true): [AgreementInterface]
+
+  """The fuel/service type for this meter point."""
+  supplyType: String
+  smartStartDate: Date
+  lnsp: LNSPType!
+
+  """The physical state of the meter point"""
+  energizationStatus: EnergizationStatus
+}
+
+"""Interface for common fields for Aus Electricity and Gas Meterpoints."""
+interface MeterPointInterface {
+  status: String
+
+  """Returns all meters by default, but can be filtered by meter id."""
+  meters(id: Int): [Meter]
+
+  """
+  Details about an enrolment of this meter point. Will be null if no enrolment is taking place.
+  """
+  enrolment: EnrolmentType
+  id: Int
+  identifier: String
+  supplyStatus: KrakenStatus
+
+  """
+  A list of agreements belonging to an account that is linked to the logged in user.
+  """
+  agreements(includeInactive: Boolean = true): [AgreementInterface]
+
+  """The fuel/service type for this meter point."""
+  supplyType: String
+}
+
+interface Meter {
+  id: ID!
+  serialNumber: String!
+
+  """The units of consumption for a smart meter."""
+  consumptionUnits: String
+
+  """Whether this meter requires a final change of tenancy (COT) reading."""
+  requiresCotFinalReading: Boolean
+
+  """Energy consumption recorded by the meter."""
+  consumption(
+    """Earliest consumption reading to return. Must specify a timezone."""
+    startAt: DateTime!
+
+    """Aggregate consumption according to this grouping."""
+    grouping: ConsumptionGroupings!
+
+    """Timezone to use for grouping."""
+    timezone: String!
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): ConsumptionConnection
+}
+
+"""Pagination for energy consumption readings."""
+type ConsumptionConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ConsumptionEdge]!
+}
+
+"""A Relay edge containing a `Consumption` and its cursor."""
+type ConsumptionEdge {
+  """The item at the end of the edge"""
+  node: ConsumptionType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""Energy consumption between two points in time."""
+type ConsumptionType {
+  value: Decimal
+  startAt: DateTime
+  endAt: DateTime
+}
+
+"""An enumeration."""
+enum ConsumptionGroupings {
+  HALF_HOUR
+  HOUR
+  DAY
+  WEEK
+  MONTH
+  QUARTER
+}
+
+"""Details of an ongoing enrolment process."""
+type EnrolmentType {
+  """Date the switch started."""
+  switchStartDate: Date
+
+  """Target date for supply to start."""
+  supplyStartDate: Date
+
+  """
+  
+  
+  PRE_REGISTRATION can transition to the following statuses:️ INITIATED.
+  
+  INITIATED can transition to the following statuses:️ REJECTED, PENDING_VALIDATION, CANCELLED, REQUESTED.
+  
+  PENDING_VALIDATION can transition to the following statuses:️ REQUESTED, REJECTED, CANCELLED, PENDING_CANCELLATION, OBJECTED, PENDING.
+  
+  REQUESTED can transition to the following statuses:️ PENDING, COMPLETED, OBJECTED, REJECTED, CANCELLED, PENDING_CANCELLATION, PENDING_VALIDATION.
+  
+  OBJECTED can transition to the following statuses:️ REQUESTED, CANCELLED, PENDING_CANCELLATION, OBJECTION_WITHDRAWN.
+  
+  REJECTED can transition to the following statuses:️ REJECTED.
+  
+  WITHDRAWN is a terminal status.
+  
+  PENDING can transition to the following statuses:️ COMPLETED, CANCELLED, PENDING_CANCELLATION, OBJECTED, REJECTED.
+  
+  COMPLETED is a terminal status.
+  
+  CANCELLED is a terminal status.
+  
+  PENDING_CANCELLATION can transition to the following statuses:️ CANCELLED.
+  
+  OBJECTION_WITHDRAWN can transition to the following statuses:️ REQUESTED, OBJECTED.
+  """
+  status: ChangeOfSupplierStatusOptions
+}
+
+"""An enumeration."""
+enum ChangeOfSupplierStatusOptions {
+  """
+  Initiation is the first status of a new change of supplier request. During this status, the initiating participant send an appropriate change reason code to MSATS. MSATS will then validate the change request prior to changing the status to ```PENDING_VALIDATION``` status. 
+  """
+  INITIATED
+
+  """
+  The Pending Validation status commences after the Change Request has passed initial validation for entry into MSATS. However, not all the data that is required to initiate the transaction may be present in MSATS. If mandatory data is missing from the Change Request, the Change Request will be Rejected. If the missing data is for the NMI Master Record, a Data Request will be sent to the nominated Participant, and MSATS will check for the receipt of that data. There is no time limit imposed by MSATS for the provision of this data, however, the Participant that receives the Data Request must respond in a reasonable time. The Change Request will be approved only after all required data has been submitted. 
+  """
+  PENDING_VALIDATION
+
+  """
+  The Rejected status occurs where a Change Request has failed validation. This can occur: 
+  
+   - During the validation of a Change Request whilst it is at the ```PENDING_VALIDATION``` status; or 
+  
+   - At the time of completion of the Change Request (in rare circumstances where a change to some other data made after this Change Request was submitted has now made this change invalid). 
+  
+   When a transaction has been Rejected, all Participants associated with the transaction will be notified in accordance with the Change Request Status Notification Rules. 
+  """
+  REJECTED
+
+  """
+  The Requested status is where a transaction has been validated, i.e. there is no missing data. Notifications of the Requested transaction are sent to the relevant Participants. The Objection Logging Period and Objection Clearing Periods have been identified. Any Objections received are validated against the Objection Rules or no Objections have been submitted.
+  """
+  REQUESTED
+
+  """
+  The Objected status occurs where one or more Objections have been received. Notifications of the Objections are sent to the relevant parties. This includes details of the Objections and whether the transaction was already being Objected to. When an Objection is withdrawn, the relevant parties will be notified of the details of the withdrawn Objection. When the last Objection is withdrawn, the transaction status changes back to ```REQUESTED```, unless the Objection Logging Period has expired, in which case it will move to Pending status. If the Objection Clearing Period has expired and an Objection that is subject to the Objection Logging Period has not been withdrawn the status will be changed to ```CANCELLED```.
+  """
+  OBJECTED
+
+  """
+  The Pending status is where no Objections have been received, or all Objections have been withdrawn and the Objection period has passed. The transaction is waiting for the change date to be reached. If the Proposed Change Date is reached and all required data is present, the status will change to ```COMPLETED```. The status will remain ```PENDING``` whilst any required data remains outstanding or an Objection that is not subject to the Objection Logging Period is not raised. Notifications are sent to the relevant Participants in accordance with the Change Request Status Notification Rules.
+  """
+  PENDING
+
+  """
+  The Completed status occurs where the Objection Logging Period has passed, all required data is present in MSATS and the Proposed Change Date has been reached or is passed. Notifications are sent to the relevant Participants in accordance with the Change Request Status Notification Rules.
+  """
+  COMPLETED
+
+  """
+  The Cancelled status occurs where:  
+  
+   - Not all Objections have been withdrawn at expiry of the Objection Clearing Period; or 
+  
+   - The initiator of the Change Request has withdrawn the transaction. 
+  
+   When a Change Request is Cancelled, notifications are sent to the relevant Participants in accordance with the Change Request Status Notification Rules. 
+  """
+  CANCELLED
+
+  """
+  The meterpoint has been enrolled but the change request has not been sent yet (as the cooling off period is still active)
+  """
+  PRE_REGISTRATION
+
+  """
+  The enrolment was started and then either the customer or a staff member has withdrawn it.
+  """
+  WITHDRAWN
+
+  """
+  If the account is withdrawn after the change request is sent, the meter points will have this status until we get a response to the request to withdraw.
+  """
+  CANCELLATION_REQUESTED
+
+  """A raised objection was withdrawn and the change request will continue."""
+  OBJECTION_WITHDRAWN
+}
+
+"""An enumeration."""
+enum KrakenStatus {
+  OFF_SUPPLY
+  ON_SUPPLY
+  GAINING
+  LOSING
+  LOST
+}
+
+interface AgreementInterface {
+  id: Int
+  validFrom: DateTime
+  validTo: DateTime
+  agreedFrom: DateTime
+  agreedTo: DateTime
+  isRevoked: Boolean
+  product: Product
+  supplyType: String
+  isActive: String
+  meterPoint: MeterPointInterface
+}
+
+type Product {
+  rates: [Rate] @deprecated(reason: "Please use `productRates` instead.")
+  productRates: [RateInterface]
+  code: String
+  displayName: String
+  description: String
+  isStandingOffer: Boolean
+  marketName: MarketName
+}
+
+"""
+Product rates may be matched to registers using the network tariff code and time of day.
+"""
+type Rate {
+  """Accumulation meters use the `ALLDAY` product rates."""
+  timeOfDay: String
+  currency: String
+  pricePerUnit: Float @deprecated(reason: "Use rateExcludingTax instead.")
+  bandCategory: String
+
+  """Matches the Network Tariff Codes published by each LNSP."""
+  networkTariffCode: String
+
+  """Unit cost before tax."""
+  rateExcludingTax: Float!
+
+  """Unit cost including tax."""
+  rateIncludingTax: Float!
+
+  """Description for the network tariff code"""
+  chargeDescription: String
+
+  """Description that will show up on the customer's bill"""
+  rateDescription: String
+  validFrom: DateTime
+  validTo: DateTime
+}
+
+"""Interface for Electricity and Gas rates"""
+interface RateInterface {
+  currency: String
+  bandCategory: String
+
+  """Unit cost before tax."""
+  rateExcludingTax: Float!
+
+  """Unit cost including tax."""
+  rateIncludingTax: Float!
+
+  """Description that will show up on the customer's bill"""
+  rateDescription: String
+  validFrom: DateTime
+  validTo: DateTime
+}
+
+"""An enumeration."""
+enum MarketName {
+  AUS_ELECTRICITY
+  AUS_GAS
+}
+
+"""
+An electricity meter is a collection of registers which store readings. Eco7 meters are an example of a meter with multiple registers (for day and night).
+"""
+type ElectricityMeterType implements Meter {
+  id: ID!
+
+  """"""
+  meterPoint: MeterPointType!
+
+  """"""
+  activeFrom: DateTime
+
+  """"""
+  activeTo: DateTime
+  serialNumber: String!
+
+  """"""
+  status: MeterStatus!
+
+  """"""
+  installationType: MeterInstallationType!
+
+  """"""
+  nextScheduledReadDate: Date
+
+  """"""
+  readTypeMethod: MeterReadTypeMethod
+
+  """"""
+  readTypeMode: MeterReadTypeMode
+
+  """"""
+  readTypeFrequency: MeterReadTypeFrequency
+
+  """The units of consumption for a smart meter."""
+  consumptionUnits: String
+
+  """Whether this meter requires a final change of tenancy (COT) reading."""
+  requiresCotFinalReading: Boolean
+
+  """Energy consumption recorded by the meter."""
+  consumption(
+    """Earliest consumption reading to return. Must specify a timezone."""
+    startAt: DateTime!
+
+    """Aggregate consumption according to this grouping."""
+    grouping: ConsumptionGroupings!
+
+    """Timezone to use for grouping."""
+    timezone: String!
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): ConsumptionConnection
+  readings(includeQuarantined: Boolean = false, before: String, after: String, first: Int, last: Int): ElectricityMeterReadingConnectionTypeConnection
+  registers: [ElectricityRegisterType]
+}
+
+"""An enumeration."""
+enum MeterStatus {
+  """Current"""
+  C
+
+  """Removed"""
+  R
+
+  """Remotely Disconnected"""
+  D
+}
+
+"""An enumeration."""
+enum MeterInstallationType {
+  """BASIC"""
+  BASIC
+
+  """COMMS1"""
+  COMMS1
+
+  """COMMS2"""
+  COMMS2
+
+  """COMMS3"""
+  COMMS3
+
+  """COMMS4"""
+  COMMS4
+
+  """Comms4A"""
+  COMMS4A
+
+  """COMMS4C"""
+  COMMS4C
+
+  """COMMS4D"""
+  COMMS4D
+
+  """MRAM"""
+  MRAM
+
+  """MRIM"""
+  MRIM
+
+  """PROF"""
+  PROF
+
+  """SAMPLE"""
+  SAMPLE
+
+  """UMCP"""
+  UMCP
+
+  """VICAMI"""
+  VICAMI
+}
+
+"""An enumeration."""
+enum MeterReadTypeMethod {
+  """Manual"""
+  M
+
+  """Remote"""
+  R
+}
+
+"""An enumeration."""
+enum MeterReadTypeMode {
+  """Telephone"""
+  T
+
+  """Wireless"""
+  W
+
+  """Powerline"""
+  P
+
+  """Infra Red"""
+  I
+
+  """Galvanic"""
+  G
+
+  """Visual"""
+  V
+}
+
+"""An enumeration."""
+enum MeterReadTypeFrequency {
+  """Monthly"""
+  A_1
+
+  """Bi Monthly"""
+  A_2
+
+  """Quarterly"""
+  A_3
+
+  """Daily Or Weekly"""
+  D
+}
+
+"""
+A register on a meter.See _standing data for MSATS_ for more information.
+"""
+type ElectricityRegisterType {
+  dataStream: ElectricityDataStreamType!
+
+  """MSATS RegisterId."""
+  identifier: String!
+
+  """
+  Code to identify the time validity of register contents, as published by each LNSP.
+  """
+  timeOfDay: String!
+
+  """From the Network Tariff Codes supplied and published by each LNSP."""
+  networkTariffCode: String!
+
+  """"""
+  dialFormatDigits: Int
+
+  """"""
+  dialFormatDecimals: Int
+  unitOfMeasure: UnitOfMeasure!
+  isExportRegister: Boolean!
+  isActive: Boolean!
+
+  """Whether the register measures reactive power"""
+  isReactive: Boolean!
+
+  """
+   
+  Fetch summaries of electricity meter readings.
+  You need to pass in the readings granularity desired for the results (e.g. DAILY or MONTHLY).
+  Optionally include readings that have been quarantined (these are excluded by default).
+  Also optionally include/exclude estimated readings (included by default).
+  Days where no meter readings occurred will be omitted.
+  
+  The summarised readings returned have the same semantic meaning as
+  raw readings for this register; interval meters will return a
+  consumption figure for this interval, and accumulation
+  meters will return a raw read (that must be subtracted from
+  the previous read to determine consumption).
+  
+  If this isn't what you want, use `consumptionSummary`
+  instead.
+   
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  readingsSummary(
+    """Readings which happened before the start of this day will be excluded."""
+    startDate: Date!
+
+    """Readings which happened after the end of this day will be excluded."""
+    endDate: Date!
+
+    """Data granularity desired for the summary results"""
+    readingsGranularity: ReadingsGranularity!
+
+    """Include readings that have been quarantined in Kraken"""
+    includeQuarantined: Boolean = false
+
+    """Include estimated readings"""
+    includeEstimates: Boolean = true
+  ): [DailyElectricityMeterReadingType]
+
+  """
+   
+  Fetch consumption on this register, bucketed into time
+  slices of a variable granularity.
+  
+  Unlike `readingsSummary`, this endpoint returns
+  _consumption_; in particular, for accumulation meters, the
+  returned value represents the absolute amount of energy
+  consumed, rather than reading values.
+  
+  When the readings we have are less granular than the
+  requested granularity (e.g. half-hourly or even monthly
+  consumption requested on an interval meter), the consumption
+  is divided evenly.
+  
+  Note that, because the way that humans measure time is
+  weird, so too are the results of this endpoint. For
+  instance, a day may not have exactly 48 half-hour periods
+  (because a DST transition happened), and a three-month
+  interval of meter readings may not appear to be spread
+  evenly between months (because months have different numbers
+  of days).
+  
+  `startAt` and `endAt` must be no more than this number of
+  days apart:
+  
+  | Granularity used | Maximum request range |
+  |------------------|-----------------------|
+  | `HALF_HOURLY`    | 10 days               |
+  | `DAILY`          | 100 days              |
+  | `MONTHLY`        | 800 days              |
+   
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  consumptionSummary(
+    """Include readings that have been quarantined in Kraken"""
+    includeQuarantined: Boolean = false
+
+    """Include estimated readings"""
+    includeEstimates: Boolean = true
+
+    """
+    
+    Include data starting at this datetime.
+    
+    If a datetime-naïve value (without a UTC offset) is
+    passed, this will be assumed to be in the timezone
+    specified in ``timezone``; if the UTC offset is absent
+    and it is a time that occurs more than once in the given
+    timezone (e.g. 2am on a transition out of DST) the
+    behaviour is undefined.
+    
+    """
+    startAt: DateTime!
+
+    """
+    
+    Include data ending at this datetime. If a
+    datetime-naïve value (without a UTC offset) is passed,
+    this will be assumed to be in the timezone specified in
+    ``timezone``; if the UTC offset is absent and it is a
+    time that occurs more than once in the given timezone
+    (e.g. 2am on a transition out of DST) the behaviour
+    is undefined.
+    
+    """
+    endAt: DateTime!
+
+    """
+    Olson timezone identifier to use (e.g. `Australia/Melbourne`). This is used to determine what time of day to split days and months.
+    """
+    timezone: String!
+
+    """How granular the returned results should be"""
+    granularity: ConsumptionGranularity!
+  ): [SummarizedConsumptionType!]!
+}
+
+"""A data stream for one or more meter registers."""
+type ElectricityDataStreamType {
+  """Estimated energy used by the data stream for this register (kWh/day)."""
+  averageDailyLoad: Float!
+}
+
+"""An enumeration."""
+enum UnitOfMeasure {
+  """MWh"""
+  MWH
+
+  """kWh"""
+  KWH
+
+  """Wh"""
+  WH
+
+  """MVArh"""
+  MVARH
+
+  """kVArh"""
+  KVARH
+
+  """VArh"""
+  VARH
+
+  """MVAr"""
+  MVAR
+
+  """kVAr"""
+  KVAR
+
+  """VAr"""
+  VAR
+
+  """MW"""
+  MW
+
+  """kW"""
+  KW
+
+  """W"""
+  W
+
+  """MVAh"""
+  MVAH
+
+  """kVAh"""
+  KVAH
+
+  """VAh"""
+  VAH
+
+  """MVA"""
+  MVA
+
+  """kVA"""
+  KVA
+
+  """VA"""
+  VA
+
+  """kV"""
+  KV
+
+  """V"""
+  V
+
+  """kA"""
+  KA
+
+  """A"""
+  A
+
+  """pf"""
+  PF
+}
+
+"""An enumeration."""
+enum ReadingsGranularity {
+  DAILY
+  MONTHLY
+}
+
+type SummarizedConsumptionType {
+  startAt: DateTime!
+  endAt: DateTime!
+  consumption: Float!
+}
+
+"""An enumeration."""
+enum ConsumptionGranularity {
+  HALF_HOURLY
+  DAILY
+  MONTHLY
+}
+
+type LNSPType {
+  id: String!
+  shortName: String!
+  longName: String!
+  displayName: String!
+  emergencyPhoneNumber: String!
+  outagePhoneNumber: String
+}
+
+"""An enumeration."""
+enum EnergizationStatus {
+  A
+  D
+  X
+  G
+  N
+}
+
+"""Estimated daily energy usage for a household in kWh/day."""
+scalar EnergyBenchmarkType
+
+type AccountType implements AccountInterface {
+  """A code that uniquely identifies the account."""
+  number: String
+
+  """The current status of the account"""
+  status: AccountStatus
+
+  """The current account balance."""
+  balance: Int
+
+  """Unique reference number from a 3rd party enrolment."""
+  urn: String
+
+  """The billing name of the account."""
+  billingName: String
+
+  """The billing address of the account."""
+  billingAddress: String
+  billingAddressLine1: String
+  billingAddressLine2: String
+  billingAddressLine3: String
+  billingAddressLine4: String
+  billingAddressLine5: String
+  billingAddressPostcode: String
+  billingCountryCode: String
+  billingDeliveryPointIdentifier: String
+
+  """List of billing address lines."""
+  splitBillingAddress: [String]
+
+  """Whether the account can request a credit refund."""
+  canRequestRefund: Boolean
+
+  """The payments made into an account from a payment instruction."""
+  payments(status: AccountPaymentStatusOptions, before: String, after: String, first: Int, last: Int): AccountPaymentConnectionTypeConnection
+
+  """The repayments that have been requested for this account."""
+  repayments(
+    """Only return repayments whose status matches one of these statuses"""
+    statuses: [AccountRepaymentStatusOptions]
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): AccountRepaymentConnectionTypeConnection
+
+  """
+  The schedules that describe how we would expect to take payments for an account on a given month.
+  """
+  paymentSchedules(activeOnDate: Date, active: Boolean, canCreatePayment: Boolean, reason: PaymentScheduleReasonOptions, before: String, after: String, first: Int, last: Int): PaymentScheduleConnectionTypeConnection
+
+  """
+  A list displaying the payment forecast for an account. The list starts from today's date (inclusive).
+  """
+  paymentForecast(
+    """The end date to retrieve forecasts for. This end date is inclusive."""
+    dateTo: Date!
+
+    """
+    The ledger to return payment forecasts from. Defaults to the main ledger when no ID is passed.
+    """
+    ledgerId: Int
+  ): [PaymentForecastType]
+
+  """The referrals created by this account."""
+  referrals(before: String, after: String, first: Int, last: Int): ReferralConnectionTypeConnection
+
+  """The referral schemes currently active for this account."""
+  activeReferralSchemes: ReferralSchemeTypes
+
+  """Fetch transactions that have taken place on the account."""
+  transactions(
+    """Return these transaction types only."""
+    transactionTypes: [TransactionTypeFilter] = []
+
+    """The ledger to return transactions from."""
+    ledgerId: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): TransactionConnectionTypeConnection
+  provisionalTransactions(before: String, after: String, first: Int, last: Int): ProvisionalTransactionConnectionTypeConnection
+
+  """Fetch annual statements for the account."""
+  annualStatements(before: String, after: String, first: Int, last: Int): AnnualStatementConnectionTypeConnection
+
+  """Fetch issued bills (invoices/statements) for the account."""
+  bills(
+    """Include bills without PDFs"""
+    includeBillsWithoutPDF: Boolean = false
+
+    """
+    
+    Include open statements. This flag needs to be used along with
+    includeBillsWithoutPDF=false otherwise results will prove unexpected.
+    
+    """
+    includeOpenStatements: Boolean = false
+
+    """Only include bills emailed to the current user's email"""
+    onlyCurrentEmail: Boolean = false
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): BillConnectionTypeConnection
+
+  """Information about the account's billing cycle."""
+  billingOptions: BillingOptionsType
+
+  """Fetch a specific issued bill (invoice/statement) for the account."""
+  bill(id: ID, billType: BillTypeEnum): BillInterface
+
+  """The direct debit instructions of the account"""
+  directDebitInstructions(
+    """Filter the direct debit instructions by status"""
+    statuses: [DirectDebitInstructionStatus]
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): DirectDebitInstructionConnectionTypeConnection
+
+  """The account events that were recorded for the account."""
+  events(
+    """Filter the account events by their type."""
+    eventTypes: [AccountEventType]
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): AccountEventConnectionTypeConnection
+
+  """
+  Applications by this account to become our customer. More recent applications will be listed first.
+  """
+  applications(before: String, after: String, first: Int, last: Int): AccountApplicationConnectionTypeConnection
+
+  """The type of account."""
+  accountType: AccountTypeChoices
+
+  """The method the account has specified they prefer we contact them"""
+  commsDeliveryPreference: CommsDeliveryPreference
+  communicationDeliveryPreference: String @deprecated(reason: "Use `commsDeliveryPreference` instead")
+
+  """Account references linked to this account."""
+  references: [AccountReferenceType]
+
+  """
+  The maximum amount a customer is allowed to request as a refund and the reason why that's the maximum amount.
+  """
+  maximumRefund: MaximumRefundType
+  electricityAgreements(active: Boolean): [ElectricityAgreementType] @deprecated(reason: "Use `agreements` instead.")
+  agreements(active: Boolean): [AgreementInterface]
+  properties(activeFrom: DateTime): [PropertyType]
+
+  """
+  Fetch a list of due charges for an account.
+  
+  Due charges are defined for each issued statement as:
+  
+  ```
+  Charges due = 0
+  - Closing balance of the statement
+  - Sum of payments and credits received after the statement's `to_date`
+  - Due charges on previous statements
+  ```
+  
+  (Remember that if the customer owes us money, then their balance will be negative, so
+  subtracting it will result in a positive amount.)
+  
+  Usually, many of a customer's issued statements will have 0 due charges remaining. We omit
+  most of these `0` results from the output.
+  
+  You may use `asOfDate` to request a historical view of due charges. If you set it, then
+  statements issued after the `asOfDate` will be omitted, and payments and credits posted
+  after that date will be ignored by the calculation.
+  """
+  dueCharges(asOfDate: Date = "2021-08-19"): [DueChargesType]
+
+  """Information related to the viability of a payment extension"""
+  paymentExtensionInfo: PaymentExtensionInfoType
+}
+
+type ElectricityAgreementType implements AgreementInterface {
+  id: Int
+  validFrom: DateTime
+  validTo: DateTime
+
+  """"""
+  agreedAt: DateTime
+
+  """"""
+  terminatedAt: DateTime
+  agreedFrom: DateTime
+  agreedTo: DateTime
+  isRevoked: Boolean
+  product: Product
+  supplyType: String
+  isActive: String
+  meterPoint: MeterPointType
+}
+
+type DueChargesType {
+  """Number of cents that the customer still needs to pay."""
+  amount: Int!
+
+  """The statement that contained these charges."""
+  statement: StatementType!
+
+  """Date that the customer is expected to pay by."""
+  dueDate: Date!
+}
+
+type StatementType implements BillInterface {
+  id: ID
+  billType: BillTypeEnum
+  fromDate: Date
+  toDate: Date
+
+  """
+  Requesting this field generates a temporary URL at which bill is available.
+          This URL will expire after approximately an hour.  It is intended for redirection purposes,
+          NOT persistence in any form (e.g. inclusion in emails or the body of a web page).
+          This field can raise an error with errorClass NOT_FOUND if the bill document has not
+          been created/issued yet.
+  
+  
+          Expected `errorClass`:
+  - NOT_FOUND
+  - SERVICE_AVAILABILITY
+  """
+  temporaryUrl: String
+
+  """The date the bill was sent to the customer."""
+  issuedDate: Date
+
+  """This field returns the closing balance of an issued statement."""
+  closingBalance: Int
+
+  """Whether the bill originated in Kraken or externally."""
+  isExternalBill: Boolean
+
+  """Transactions on the bill."""
+  transactions(before: String, after: String, first: Int, last: Int): TransactionConnectionTypeConnection
+
+  """Email recipient user ID."""
+  userId: Int
+
+  """Email recipient address."""
+  toAddress: String
+
+  """The date the bill is due to be paid."""
+  paymentDueDate: Date
+
+  """The first day of consumption that this statement includes"""
+  consumptionStartDate: Date
+
+  """The last day of consumption that this statement includes"""
+  consumptionEndDate: Date
+
+  """How many charges have been reversed after the close date."""
+  reversalsAfterClose: StatementReversalsAfterClose!
+}
+
+"""An enumeration."""
+enum StatementReversalsAfterClose {
+  """All charges have been reversed after the statement was closed."""
+  ALL
+
+  """Some charges have been reversed after the statement was closed."""
+  SOME
+
+  """No reversals after the statement was closed."""
+  NONE
+
+  """The statement has not been closed yet."""
+  NOT_CLOSED
+}
+
+type PaymentExtensionInfoType {
+  """Options for setting up a payment extension"""
+  paymentExtensionOptions: PaymentExtensionOptionsType
+
+  """Whether the current account is eligible to request a payment extension"""
+  isEligibleForPaymentExtension: Boolean
+}
+
+type PaymentExtensionOptionsType {
+  """The allowable dates on which a full payment can be made"""
+  payInFull: [Date]!
+
+  """The allowable start dates on which a weekly payment can be initiated"""
+  weekly: [Date]!
+
+  """
+  The allowable start dates on which a fortnightly payment can be initiated
+  """
+  fortnightly: [Date]!
+
+  """The full amount that is due on the customer account"""
+  fullAmount: Int!
+
+  """The instalment amount for the regular payments"""
+  instalmentAmount: Int!
+}
+
+"""
+This class inherits from multiple Mutations as we add more apps to the API.
+"""
+type Mutation {
+  """
+  
+  Creates payment extension according to the recieved options.
+  
+  Taken action would be one of the following:
+  
+  - if payment instruction is _NOT_ supplied and the account is on a manual payment,
+    sets up one or two payment promise(s)
+  - if payment instruction is _NOT_ supplied and the account is on an scheduled payment
+    (direct debit/card), creates payment holiday
+  - if payment instruction is supplied, sets up payment schedules for one or two instalment(s)
+  
+  
+  A payment promise applies to an account that does not have automatic
+  payments. It records that a customer has told us they'll pay an amount by
+  an agreed-upon date.
+  
+  
+  Payment Holiday means that when a customer is on a scheduled payment, the payments
+  will not come out from customer's bank account for the period indicated.
+  
+  Expected `errorClass`:
+  - AUTHORIZATION
+  - APPLICATION
+  - VALIDATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  createPaymentExtension(
+    """Input fields for creating a payment extension for the account"""
+    input: CreatePaymentExtensionInput!
+  ): CreatePaymentExtension
+
+  """
+  Update an existing credit card instruction
+  
+  Expected `errorClass`:
+  - AUTHORIZATION
+  - APPLICATION
+  - VALIDATION
+  """
+  updateCreditCardInstruction(
+    """Input fields for updating a credit card instruction"""
+    input: UpdateCreditCardInstructionInput!
+  ): UpdateCreditCardInstruction
+
+  """
+  Create new direct debit instruction
+  
+  Expected `errorClass`:
+  - VALIDATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  createDirectDebitInstruction(
+    """Input fields for creating a new direct debit instruction"""
+    input: CreateDirectDebitInstructionInput!
+  ): CreateDirectDebitInstruction
+
+  """
+  Replaced the active payment schedule with a manual payment schedule.
+  
+  Expected `errorClass`:
+  - AUTHORIZATION
+  - APPLICATION
+  - VALIDATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  replacePaymentSchedule(
+    """Input fields for replacing the active payment schedule"""
+    input: ReplacePaymentScheduleInput!
+  ): ReplacePaymentSchedule
+
+  """
+  Create a new credit card instruction
+  
+  Expected `errorClass`:
+  - AUTHORIZATION
+  - APPLICATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  createCreditCardInstruction(
+    """Input fields for creating a credit card instruction."""
+    input: CreateCreditCardInstructionInput!
+  ): CreateCreditCardInstruction
+
+  """
+  Creates a new payment schedule
+  
+  Expected `errorClass`:
+  - AUTHORIZATION
+  - APPLICATION
+  - VALIDATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  createPaymentSchedule(input: PaymentScheduleInput!): CreatePaymentSchedule
+
+  """
+  Deletes an existing payment instruction
+  
+  Expected `errorClass`:
+  - AUTHORIZATION
+  - APPLICATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  deletePaymentInstruction(
+    """Input fields for deleting a payment instruction"""
+    input: DeletePaymentInstructionInput!
+  ): DeletePaymentInstruction
+
+  """
+  Make Payment with a new card and save the card
+  
+  Expected `errorClass`:
+  - AUTHORIZATION
+  - APPLICATION
+  - VALIDATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  makePaymentWithNewCard(
+    """Input fields for making a payment with a new card"""
+    input: MakePaymentWithNewCardInput!
+  ): MakePaymentWithNewCard
+
+  """
+  Make a payment with a saved credit card instruction.
+  
+  Expected `errorClass`:
+  - AUTHORIZATION
+  - APPLICATION
+  - VALIDATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  makePaymentWithSavedCard(
+    """Input fields for making a payment with a saved card"""
+    input: MakePaymentWithSavedCardInput!
+  ): MakePaymentWithSavedCard
+
+  """Create a shell/payment account."""
+  createShellAccount(input: CreateShellAccountInput!): CreateShellAccountPayload
+
+  """Update account communication delivery preference."""
+  updateCommsDeliveryPreference(
+    """Input fields for updating comms delivery preferences for an account"""
+    input: UpdateCommsDeliveryPreferenceInput!
+  ): UpdateCommsDeliveryPreference
+
+  """Update address for all accounts for this user"""
+  updateUserAddress(
+    """New billing address for user accounts"""
+    address: UpdateAddressInput!
+  ): UpdateUserAddressMutation
+
+  """Update address for a single account"""
+  updateAccountAddress(
+    """The list of account numbers on which the address is to be updated"""
+    accounts: [String]
+
+    """New billing address for user accounts"""
+    address: UpdateAddressInput!
+  ): UpdateAccountAddressMutation
+
+  """Add a custom event for an account"""
+  addCustomEvent(accountNumber: String!, category: String!, content: String!, subCategory: String): AddCustomEventMutation
+
+  """
+  **DEPRECATED: Please use updateUser instead**
+  
+  Update the account user details of the authenticated user. Only one field can be updated per day. This prevents users from switching accounts to someone else (usually when moving homes) All account changes should be handled by operations or the move out journey. New customers are exempt from this rule for the first 31 days.
+  """
+  updateUserDetails(input: UpdateAccountUserMutationInput!): UpdateAccountUserMutationPayload
+
+  """
+  Update the comms preferences of the account user (the authenticated user).
+  """
+  updateCommsPreferences(input: UpdateAccountUserCommsPreferencesMutationInput!): UpdateAccountUserCommsPreferencesMutationPayload
+
+  """
+  Update password of the authenticated user
+  
+  Expected `errorClass`:
+  - VALIDATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  updatePassword(input: UpdatePasswordInput): UpdatePassword
+
+  """
+  Update the account user details of the authenticated user.
+  
+  firstName and givenName fields are blocked and can't be updated via this mutation. There is no limit in the number of fields and number of times they can be updated per day.
+  
+  Expected `errorClass`:
+  - VALIDATION
+  - AUTHORIZATION
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  updateUser(
+    """Input fields for updating user"""
+    input: UpdateUserInput!
+  ): UpdateUserMutation
+
+  """
+  Submit customer feedback.Expected `errorClass`:
+  - NOT_FOUND
+  - VALIDATION
+  """
+  submitCustomerFeedback(accountNumber: String!, answer: String, feedbackId: Int!, formId: Int!, issueResolved: Boolean!): CustomerFeedbackOutputType
+
+  """
+  Get the client secret needed to create a new payment instruction using an embedded form.
+  """
+  getEmbeddedSecretForNewPaymentInstruction(
+    """
+    Input fields for getting the client secret for an embedded new card payment method form.
+    """
+    input: GetEmbeddedSecretForNewPaymentInstructionInput!
+  ): GetEmbeddedSecretForNewPaymentInstruction
+
+  """
+  Get the client secret needed to collect an ad hoc payment using an embedded form.
+  """
+  getEmbeddedSecretForAdHocPayment(
+    """
+    Input fields for getting the client secret for an embedded one off payment form.
+    """
+    input: GetEmbeddedSecretForAdHocPaymentInput!
+  ): GetEmbeddedSecretForAdHocPayment
+
+  """Store a new card instruction from an embedded form."""
+  storeCardPaymentInstruction(
+    """Input fields for storing a new card instruction from an embedded form."""
+    input: StoreCardPaymentInstructionInput!
+  ): StoreCardPaymentInstruction
+
+  """Create an account reference."""
+  createAccountReference(
+    """Input fields for creating an account reference."""
+    input: AccountReferenceInput!
+  ): CreateAccountReference
+
+  """Update an account reference."""
+  updateAccountReference(
+    """Input fields for updating an account reference."""
+    input: AccountReferenceInput!
+  ): UpdateAccountReference
+
+  """Add credit to an account."""
+  createAccountCredit(
+    """Input fields for creating an account credit."""
+    input: CreateAccountCreditInput!
+  ): CreateAccountCredit
+
+  """Add charge to an account."""
+  createAccountCharge(
+    """Input fields for creating an account charge."""
+    input: CreateAccountChargeInput!
+  ): CreateAccountCharge
+
+  """
+  Create a "form submission" entity. This is only meant to be used as a quick way of putting together a form and submit data for it, in the form of JSON - it is not expected that all form submissions will come through this path.
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  createFormSubmission(input: FormSubmissionInput!): FormSubmissionOuput
+
+  """
+  Provide username and password to receive a token. The token should be used as the Authentication header for any authenticated requests.
+  """
+  emailAuthentication(email: String!, password: String!): EmailAuthentication @deprecated(reason: "Please use createAuthenticationToken instead of this mutation.")
+
+  """
+  You probably want email authentication instead of this. Provide user's API Key to receive a token. The token should be used as the Authentication header for any authenticated requests. This form of authentication is used when the interface in question already has the API Key and it would be inappropriate to show the user a login screen.
+  """
+  apiKeyAuthentication(apiKey: String!): APIKeyAuthentication @deprecated(reason: "Please use createAuthenticationToken instead of this mutation.")
+
+  """
+  Provide a temporary token to get a regular token. This is intended to allow support users to view customer data through the brand interface.
+  """
+  masqueradeAuthentication(masqueradeToken: String!, userId: String!): MasqueradeAuthentication
+
+  """Generate a pre signed token."""
+  generatePreSignedToken(
+    email: String!
+
+    """
+    The number of days that the token will be available for authentication (From now on).
+    """
+    numberOfDaysAllowed: Int!
+
+    """Define (and limit) the scope of the token."""
+    scope: PreSignedTokenScope!
+  ): GeneratePreSignedToken
+
+  """Deactivate the regular token used to authenticate this request."""
+  disableToken: DisableToken
+
+  """
+  Provide the email address of a user to generate an email (sent to that address). The email will contain instructions on how to reset the password.
+  """
+  requestResetPassword(input: RequestResetPasswordMutationInput!): RequestResetPasswordMutationPayload
+
+  """
+  Reset the password of the user indicated by the userId to the value supplied.
+  """
+  resetPassword(input: ResetPasswordMutationInput!): ResetPasswordMutationPayload
+
+  """
+  Create a JSON Web Token (JWT) for authentication.  
+  
+  Provide username and password to receive a token. The token should be used as the Authentication header for any authenticated requests. 
+  
+  The keyword JWT must be added in front of the token. 
+  
+  Example:
+  
+  JWT eyJ0eXAiOiJKVBd....
+  """
+  createAuthenticationToken(email: String!, password: String!): ObtainJSONWebToken
+
+  """Verify the authentication JSON Web Token (JWT)."""
+  verifyAuthenticationToken(token: String): Verify
+
+  """Refresh the authentication JSON Web Token (JWT)."""
+  refreshAuthenticationToken(refreshToken: String): Refresh
+
+  """
+  Create a Kraken Token (JWT) for authentication.  
+  
+  Provide the required input fields to obtain the token. 
+  
+  The token should be used as the Authentication header for any authenticated requests. 
+  
+  The keyword JWT must be added in front of the token. 
+  
+  Example:
+  
+  JWT eyJ0eXAiOiJKVBd....
+  """
+  obtainKrakenToken(
+    """
+    Input fields that can be used to obtain a Json Web Token (JWT) for authentication to the API.
+    """
+    input: ObtainJSONWebTokenInput!
+  ): ObtainKrakenJSONWebToken
+}
+
+"""
+
+Creates payment extension according to the recieved options.
+
+Taken action would be one of the following:
+
+- if payment instruction is _NOT_ supplied and the account is on a manual payment,
+  sets up one or two payment promise(s)
+- if payment instruction is _NOT_ supplied and the account is on an scheduled payment
+  (direct debit/card), creates payment holiday
+- if payment instruction is supplied, sets up payment schedules for one or two instalment(s)
+
+
+A payment promise applies to an account that does not have automatic
+payments. It records that a customer has told us they'll pay an amount by
+an agreed-upon date.
+
+
+Payment Holiday means that when a customer is on a scheduled payment, the payments
+will not come out from customer's bank account for the period indicated.
+
+
+"""
+type CreatePaymentExtension {
+  paymentExtension: PaymentExtensionUnionType
+}
+
+union PaymentExtensionUnionType = PaymentPromiseType | PaymentScheduleType | AccountPaymentType
+
+"""
+
+A payment promise applies to an account that does not have automatic
+payments. It records that a customer has told us they'll pay an amount by
+an agreed-upon date.
+
+
+"""
+type PaymentPromiseType {
+  paymentPromises: [AccountPaymentType]
+}
+
+input CreatePaymentExtensionInput {
+  accountNumber: String!
+
+  """The start date the payment extension would be applied by"""
+  chosenDate: Date!
+
+  """The length of instalment to use for this payment extension"""
+  chosenOption: PaymentExtensionOption!
+
+  """
+  The ledger of the payment. Defaults to the main ledger when no ID is passed.
+  """
+  ledgerId: Int
+  paymentInstructionId: String
+}
+
+"""Available options for extending the payment"""
+enum PaymentExtensionOption {
+  PAY_IN_FULL
+  WEEKLY
+  FORTNIGHTLY
+}
+
+type UpdateCreditCardInstruction {
+  creditCardInstruction: DirectDebitInstructionType
+}
+
+input UpdateCreditCardInstructionInput {
+  accountNumber: String!
+  creditCardInstructionAttributes: CreditCardInstructionAttributesInput!
+}
+
+input CreditCardInstructionAttributesInput {
+  id: String!
+  expiryMonth: String!
+  expiryYear: String!
+}
+
+type CreateDirectDebitInstruction {
+  directDebitInstruction: DirectDebitInstructionType
+}
+
+input CreateDirectDebitInstructionInput {
+  accountNumber: String!
+  directDebitInstruction: DirectDebitInstructionLocalBankDetailsInput!
+}
+
+input DirectDebitInstructionLocalBankDetailsInput {
+  accountNumber: String!
+  accountHolder: String!
+  sortCode: String!
+}
+
+type ReplacePaymentSchedule {
+  replacedSchedule: PaymentScheduleType
+}
+
+input ReplacePaymentScheduleInput {
+  accountNumber: String!
+  paymentScheduleId: String!
+}
+
+type CreateCreditCardInstruction {
+  creditCardInstruction: DirectDebitInstructionType
+}
+
+input CreateCreditCardInstructionInput {
+  accountNumber: String!
+  vendorCardIdentifier: String!
+}
+
+type CreatePaymentSchedule {
+  paymentSchedule: PaymentScheduleType
+}
+
+input PaymentScheduleInput {
+  """Enter your account number."""
+  accountNumber: String!
+
+  """Input a schedule type."""
+  scheduleType: ScheduleTypeInputChoices!
+}
+
+enum ScheduleTypeInputChoices {
+  DIRECT_DEBIT
+  CARD_PAYMENT
+}
+
+type DeletePaymentInstruction {
+  paymentInstruction: DirectDebitInstructionType
+}
+
+input DeletePaymentInstructionInput {
+  accountNumber: String!
+  paymentInstructionId: String!
+}
+
+type MakePaymentWithNewCard {
+  accountPayment: AccountPaymentType
+  creditCardInstruction: DirectDebitInstructionType
+}
+
+input MakePaymentWithNewCardInput {
+  accountNumber: String!
+  vendorCardIdentifier: String!
+
+  """Payment amount in cents"""
+  amount: Int!
+
+  """Whether to save the card or not"""
+  saveCard: Boolean!
+}
+
+type MakePaymentWithSavedCard {
+  accountPayment: AccountPaymentType
+}
+
+input MakePaymentWithSavedCardInput {
+  accountNumber: String!
+  paymentInstructionId: String!
+  amount: Int!
+
+  """Date that the customer is expected to pay by."""
+  paymentDate: Date
+}
+
+"""
+Create a shell account (a billable account with no property/energy supply).
+"""
+type CreateShellAccountPayload {
+  """"""
+  givenName: String!
+
+  """"""
+  familyName: String!
+
+  """"""
+  billingName: String
+
+  """"""
+  email: String!
+
+  """"""
+  mobile: String!
+
+  """"""
+  billingAddressLine1: String!
+
+  """"""
+  billingAddressLine2: String!
+
+  """"""
+  billingAddressLine3: String
+
+  """"""
+  billingAddressLine4: String
+
+  """"""
+  billingAddressLine5: String
+
+  """"""
+  billingPostcode: String!
+
+  """"""
+  isBusinessAccount: Boolean
+
+  """"""
+  password: String
+
+  """"""
+  passwordUpdateToken: String
+
+  """"""
+  urn: String
+  errors: [ErrorType]
+  account: AccountInterface
+  clientMutationId: String
+}
+
+type ErrorType {
+  field: String!
+  messages: [String!]!
+}
+
+input CreateShellAccountInput {
+  """"""
+  givenName: String!
+
+  """"""
+  familyName: String!
+
+  """"""
+  billingName: String
+
+  """"""
+  email: String!
+
+  """"""
+  mobile: String!
+
+  """"""
+  billingAddressLine1: String!
+
+  """"""
+  billingAddressLine2: String!
+
+  """"""
+  billingAddressLine3: String
+
+  """"""
+  billingAddressLine4: String
+
+  """"""
+  billingAddressLine5: String
+
+  """"""
+  billingPostcode: String!
+
+  """"""
+  isBusinessAccount: Boolean
+
+  """"""
+  password: String
+
+  """"""
+  passwordUpdateToken: String
+
+  """"""
+  urn: String
+  clientMutationId: String
+}
+
+"""
+Update the comms delivery preference for the input account number to the
+received commsDeliveryPreference value.
+"""
+type UpdateCommsDeliveryPreference {
+  account: AccountInterface
+}
+
+"""Input fields for updating comms delivery preferences for an account"""
+input UpdateCommsDeliveryPreferenceInput {
+  accountNumber: String!
+  commsDeliveryPreference: CommsDeliveryPreference!
+}
+
+"""Update address for all accounts for user"""
+type UpdateUserAddressMutation {
+  """
+   The currently authenticated user. 
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  viewer: AccountUserType
+}
+
+input UpdateAddressInput {
+  """Up to 5 address lines"""
+  lines: [String]
+  postcode: String
+  countryCode: String
+  deliveryPointIdentifier: String
+}
+
+"""Update address for specified accounts for user"""
+type UpdateAccountAddressMutation {
+  """
+   The currently authenticated user. 
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  viewer: AccountUserType
+}
+
+type AddCustomEventMutation {
+  """
+   Resulting Kraken event 
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  event: CustomEventType
+}
+
+type CustomEventType {
+  """"""
+  occurredAt: DateTime!
+
+  """"""
+  category: String!
+
+  """"""
+  subcategory: String!
+
+  """"""
+  content: JSONString
+  account: String
+}
+
+"""
+Allows use of a JSON String for input / output from the GraphQL schema.
+
+Use of this type is *not recommended* as you lose the benefits of having a defined, static
+schema (one of the key benefits of GraphQL).
+"""
+scalar JSONString
+
+type UpdateAccountUserMutationPayload {
+  """"""
+  givenName: String
+
+  """"""
+  familyName: String
+
+  """"""
+  pronouns: String
+
+  """"""
+  mobile: String
+
+  """"""
+  email: String
+
+  """"""
+  dateOfBirth: Date
+
+  """"""
+  landline: String
+  errors: [ErrorType]
+  clientMutationId: String
+}
+
+input UpdateAccountUserMutationInput {
+  """"""
+  givenName: String
+
+  """"""
+  familyName: String
+
+  """"""
+  pronouns: String
+
+  """"""
+  mobile: String
+
+  """"""
+  email: String
+
+  """"""
+  dateOfBirth: Date
+
+  """"""
+  landline: String
+  clientMutationId: String
+}
+
+"""Update the account user comms preferences."""
+type UpdateAccountUserCommsPreferencesMutationPayload {
+  """"""
+  isOptedInToClientMessages: Boolean
+
+  """"""
+  isOptedInToOfferMessages: Boolean
+
+  """"""
+  isOptedInToRecommendedMessages: Boolean
+
+  """"""
+  isOptedInToUpdateMessages: Boolean
+
+  """"""
+  isOptedInToThirdPartyMessages: Boolean
+
+  """"""
+  isOptedInMeterReadingConfirmations: Boolean
+
+  """"""
+  isOptedInToSmsMessages: Boolean
+
+  """"""
+  isUsingInvertedEmailColours: Boolean
+
+  """"""
+  fontSizeMultiplier: Float
+
+  """"""
+  emailFormat: String
+
+  """"""
+  preferredHoldMusic: String
+  errors: [ErrorType]
+  commsPreferences: AccountUserCommsPreferences
+  clientMutationId: String
+}
+
+input UpdateAccountUserCommsPreferencesMutationInput {
+  """"""
+  isOptedInToClientMessages: Boolean
+
+  """"""
+  isOptedInToOfferMessages: Boolean
+
+  """"""
+  isOptedInToRecommendedMessages: Boolean
+
+  """"""
+  isOptedInToUpdateMessages: Boolean
+
+  """"""
+  isOptedInToThirdPartyMessages: Boolean
+
+  """"""
+  isOptedInMeterReadingConfirmations: Boolean
+
+  """"""
+  isOptedInToSmsMessages: Boolean
+
+  """"""
+  isUsingInvertedEmailColours: Boolean
+
+  """"""
+  fontSizeMultiplier: Float
+
+  """"""
+  emailFormat: String
+
+  """"""
+  preferredHoldMusic: String
+  clientMutationId: String
+}
+
+"""Update user's password."""
+type UpdatePassword {
+  """
+   The currently authenticated user. 
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  viewer: AccountUserType
+}
+
+input UpdatePasswordInput {
+  """Old password"""
+  oldPassword: String!
+
+  """New password"""
+  newPassword: String!
+
+  """Confirm new password"""
+  newPasswordConfirmed: String!
+}
+
+type UpdateUserMutation {
+  viewer: AccountUserType
+}
+
+input UpdateUserInput {
+  givenName: String
+  familyName: String
+
+  """
+  How the user would like us to address them (e.g. 'she/her', 'they/them'). Because this field is clearable, null and the empty string are treated differently; passing null or omitting the field leaves the value as-is, but explicitly passing an empty string clears this value.
+  """
+  pronouns: String
+  email: String
+  mobile: String
+  dateOfBirth: Date
+  landline: String
+}
+
+type CustomerFeedbackOutputType {
+  id: ID
+}
+
+"""
+Get the client secret needed to create a new payment instruction using an embedded form.
+"""
+type GetEmbeddedSecretForNewPaymentInstruction {
+  secretKey: String
+}
+
+"""
+The input for getting the client secret for an embedded new card payment method form.
+"""
+input GetEmbeddedSecretForNewPaymentInstructionInput {
+  """The account number."""
+  accountNumber: String!
+
+  """The type of the new payment instruction."""
+  instructionType: PaymentType!
+}
+
+"""An enumeration."""
+enum PaymentType {
+  DIRECT_DEBIT
+  CARD
+}
+
+"""
+Get the client secret needed to collect an ad hoc payment using an embedded form.
+"""
+type GetEmbeddedSecretForAdHocPayment {
+  secretKey: String
+}
+
+"""
+The input for getting the client secret for an embedded one off payment method form.
+"""
+input GetEmbeddedSecretForAdHocPaymentInput {
+  """The account number."""
+  accountNumber: String!
+
+  """The amount to be charged."""
+  amount: Int!
+
+  """A description of the purpose of the payment."""
+  description: String!
+}
+
+"""Store a new card instruction for Electric Juice from an embedded form."""
+type StoreCardPaymentInstruction {
+  paymentInstruction: PaymentInstructionType
+}
+
+"""Payment Instructions"""
+type PaymentInstructionType {
+  """"""
+  id: ID!
+
+  """"""
+  status: String!
+
+  """"""
+  sortCode: String!
+
+  """"""
+  iban: String!
+
+  """"""
+  accountHolder: String!
+
+  """"""
+  instructionType: String
+
+  """"""
+  cardPaymentNetwork: String
+
+  """"""
+  cardExpiryMonth: Int
+
+  """"""
+  cardExpiryYear: Int
+
+  """"""
+  validFrom: DateTime!
+
+  """
+  The provider to use for this DDI. Most accounts would have SmartDebit as their provider, Iresa customers use GoCardless
+  """
+  vendor: String!
+
+  """"""
+  cardNumber: String!
+
+  """"""
+  cardType: String
+
+  """A masked reference to a recurring payment method."""
+  maskedAccountIdentifier: String
+}
+
+"""The input for storing a new card instruction from an embedded form."""
+input StoreCardPaymentInstructionInput {
+  """The account number."""
+  accountNumber: String!
+
+  """The datetime from which the instruction is vaild."""
+  validFrom: DateTime!
+
+  """The vendor's reference for this payment method."""
+  vendorReference: String!
+}
+
+"""Create an account reference."""
+type CreateAccountReference {
+  accountReference: AccountReferenceType
+}
+
+"""The input type for the account reference."""
+input AccountReferenceInput {
+  """The account number."""
+  accountNumber: String!
+
+  """The namespace for the reference."""
+  namespace: String!
+
+  """The reference value."""
+  value: String!
+}
+
+"""Update a reference for a particular account and namespace."""
+type UpdateAccountReference {
+  accountReference: AccountReferenceType
+}
+
+"""Add credits to an account."""
+type CreateAccountCredit {
+  accountCredit: AccountCreditType
+}
+
+type AccountCreditType {
+  """"""
+  grossAmount: Int!
+
+  """"""
+  id: ID!
+
+  """"""
+  netAmount: Int!
+
+  """"""
+  salesTaxAmount: Int!
+
+  """"""
+  note: String!
+
+  """"""
+  reason: AccountCreditReason!
+  metadata: AccountCreditMetadataType
+}
+
+"""An enumeration."""
+enum AccountCreditReason {
+  """Additional standard payment"""
+  ADDITIONAL_STANDARD_PAYMENT
+
+  """Balance adjustment"""
+  BALANCE_ADJUSTMENT
+
+  """Balance transfer"""
+  BALANCE_TRANSFER
+
+  """Bank transfer"""
+  BANK_TRANSFER
+
+  """Customer reimbursement"""
+  CUSTOMER_REIMBURSEMENT
+
+  """Disputed card payments"""
+  DISPUTED_CARD_PAYMENTS
+
+  """Imported credit"""
+  IMPORTED_CREDIT
+
+  """Market research club reward"""
+  MARKET_RESEARCH_CLUB_REWARD
+
+  """Offset"""
+  OFFSET
+
+  """Prepay debt adjustment"""
+  PREPAY_DEBT_ADJUSTMENT
+
+  """ReferralCandy incentive"""
+  REFERRALCANDY_INCENTIVE
+
+  """Reinstated direct debit"""
+  REINSTATED_DIRECT_DEBIT
+
+  """SOLR balance transfer"""
+  SOLR_BALANCE_TRANSFER
+
+  """Balance transfer"""
+  DATA_IMPORT_BALANCE_TRANSFER
+
+  """Balance transfer for final billed account"""
+  BALANCE_TRANSFER_FOR_FINAL_BILLED_ACCOUNT
+
+  """SOLR write off"""
+  SOLR_WRITE_OFF
+
+  """SOLR ex-customer credit"""
+  SOLR_EX_CUSTOMER_CREDIT
+
+  """Supplementary ledger balance transfer"""
+  SUPPLEMENTARY_LEDGER_BALANCE_TRANSFER
+
+  """Member share of profits"""
+  SHARE_OF_PROFITS
+
+  """Goodwill payment"""
+  GOODWILL_PAYMENT
+
+  """Deposit refund"""
+  DEPOSIT_REFUND
+
+  """Go Cardless chargeback cancelled"""
+  GO_CARDLESS_CHARGEBACK_CANCELLED
+
+  """Cheque payment received"""
+  CHEQUE_PAYMENT_RECEIVED
+
+  """GSS failure"""
+  GSS_FAILURE
+
+  """Erroneous transfer refund"""
+  ERRONEOUS_TRANSFER_REFUND
+
+  """Waive termination fees"""
+  WAIVE_TERMINATION_FEES
+
+  """Adjusted credit to allow refund"""
+  ADJUSTED_CREDIT_TO_ALLOW_REFUND
+
+  """Direct debit bank charge - May"""
+  DIRECT_DEBIT_BANK_CHARGE_MAY
+
+  """Gas off supply payment"""
+  GAS_OFF_SUPPLY_PAYMENT
+
+  """Honoured bank charges"""
+  HONOURED_BANK_CHARGES
+
+  """Management waived fees"""
+  MANAGEMENT_WAIVED_FEES
+
+  """Closed reversion"""
+  CLOSED_REVERSION
+
+  """GSS failure MOP"""
+  GSS_FAILURE_MOP
+
+  """GSS Affect"""
+  GSS_AFFECT
+
+  """Reversioned post DD canx"""
+  REVERSIONED_POST_DD_CANX
+
+  """Incoming payment Go Cardless"""
+  INCOMING_PAYMENT_GO_CARDLESS
+
+  """Debit balance transfer"""
+  DEBIT_BALANCE_TRANSFER
+
+  """Received via credit style"""
+  RECEIVED_VIA_CREDIT_STYLE
+
+  """Tariff price adjustment - Goodwill"""
+  TARIFF_PRICE_ADJUSTMENT_GOODWILL
+
+  """Economy 7 difference"""
+  ECONOMY_7_DIFFERENCE
+
+  """Back Billing Write Off"""
+  WRITE_OFF_BACK_BILLING
+
+  """Write off (past billable date)"""
+  WRITE_OFF_PAST_BILLABLE_AUTOMATED
+
+  """Write off (missed payment deletion)"""
+  WRITE_OFF_MISSED_DELETION
+
+  """Tariff Discount"""
+  TARIFF_DISCOUNT
+
+  """Returned business advance payment"""
+  RETURNED_BUSINESS_ADVANCE_PAYMENT
+
+  """Custom"""
+  CUSTOM
+
+  """Standards of performance (general ET)"""
+  STANDARDS_OF_PERFORMANCE_ERRONEOUS_TRANSFER
+
+  """Additional SoP payment (general ET)"""
+  ADDITIONAL_SOP_PAYMENT_ERRONEOUS_TRANSFER
+
+  """External referral credit"""
+  EXTERNAL_REFERRAL_CREDIT
+
+  """Standards of performance payments"""
+  STANDARDS_OF_PERFORMANCE_PAYMENTS
+
+  """Disc - Warm Home Discount"""
+  DISC_WARM_HOME_DISCOUNT
+
+  """Accuracy test results - balance adjustment"""
+  ACCURACY_TEST_ADJUSTMENT
+
+  """Customer service gesture"""
+  CUSTOMER_SERVICE_GESTURE
+
+  """Exit fee refund"""
+  EXIT_FEE_REFUND
+
+  """Feed-in Tariff payment"""
+  FEED_IN_TARIFF_PAYMENT
+
+  """Gas network compensation"""
+  GAS_NETWORK_COMPENSATION
+
+  """Joining reward"""
+  JOINING_REWARD
+
+  """Loyalty reward"""
+  LOYALTY_REWARD
+
+  """Missed savings"""
+  MISSED_SAVINGS
+
+  """Referral reward"""
+  REFERRAL_REWARD
+
+  """Returned business prepayment (deprecated)"""
+  RETURNED_BUSINESS_PREPAYMENT
+
+  """Sales compensation"""
+  SALES_COMPENSATION
+
+  """Export tariff payment"""
+  EXPORT_TARIFF_PAYMENT
+
+  """Write off (bankruptcy)"""
+  WRITE_OFF_BANKRUPTCY
+
+  """Write off (deceased)"""
+  WRITE_OFF_DECEASED
+
+  """Write off (DRO)"""
+  WRITE_OFF_DRO
+
+  """Write off (IVA)"""
+  WRITE_OFF_IVA
+
+  """Write off (negligible value)"""
+  WRITE_OFF_NEGLIGIBLE_VALUE
+
+  """Write off (unrecoverable debt"""
+  WRITE_OFF_UNRECOVERABLE_DEBT
+
+  """Write off (past billable date)"""
+  WRITE_OFF_PAST_BILLABLE
+
+  """Write off (recovery discount)"""
+  WRITE_OFF_RECOVERY_DISCOUNT
+
+  """Withdrawal not actioned"""
+  WITHDRAWAL_NOT_ACTIONED
+
+  """Staff Discount"""
+  STAFF_DISCOUNT
+
+  """Direct Debit Discount"""
+  DIRECT_DEBIT_DISCOUNT
+
+  """Reverse energy charge"""
+  REVERSE_ENERGY_CHARGE
+
+  """Reversed account charge"""
+  REVERSED_ACCOUNT_CHARGE
+
+  """Warm home discount - Broader group"""
+  WARM_HOME_DISCOUNT_BROADER_GROUP
+
+  """Warm home discount - Core group"""
+  WARM_HOME_DISCOUNT_CORE_GROUP
+
+  """Standards of performance (ET comms overdue)"""
+  STANDARDS_OF_PERFORMANCE_ET_COMMS_OVERDUE
+
+  """Standards of performance (ET loss unresolved)"""
+  STANDARDS_OF_PERFORMANCE_ET_LOSS_UNRESOLVED
+
+  """Standards of performance (ET gain unresolved)"""
+  STANDARDS_OF_PERFORMANCE_ET_GAIN_UNRESOLVED
+
+  """Standards of performance (Customer not returned)"""
+  STANDARDS_OF_PERFORMANCE_CUSTOMER_NOT_RETURNED
+
+  """Standards of performance (ET gain accepted)"""
+  STANDARDS_OF_PERFORMANCE_ET_GAIN_ACCEPTED
+
+  """Additional SoP payment (ET comms overdue)"""
+  ADDITIONAL_SOP_PAYMENT_ET_COMMS_OVERDUE
+
+  """Additional SoP payment (ET loss unresolved)"""
+  ADDITIONAL_SOP_PAYMENT_ET_LOSS_UNRESOLVED
+
+  """Additional SoP payment (ET gain unresolved)"""
+  ADDITIONAL_SOP_PAYMENT_ET_GAIN_UNRESOLVED
+
+  """Additional SoP payment (customer not returned)"""
+  ADDITIONAL_SOP_PAYMENT_CUSTOMER_NOT_RETURNED
+
+  """Additional SoP payment (ET gain accepted"""
+  ADDITIONAL_SOP_PAYMENT_ET_GAIN_ACCEPTED
+
+  """Standard of performance (electricity standard visit)"""
+  STANDARDS_OF_PERFORMANCE_APPOINTMENTS_STANDARD_VISIT_ELEC
+
+  """Standard of performance (electricity faulty meter resolution overdue)"""
+  STANDARDS_OF_PERFORMANCE_APPOINTMENTS_FAULTY_METER_ELEC
+
+  """Standard of performance (electricity prepay meter resolution overdue)"""
+  STANDARDS_OF_PERFORMANCE_APPOINTMENTS_PREPAY_METER_ELEC
+
+  """Standard of performance (electricity reconnection overdue)"""
+  STANDARDS_OF_PERFORMANCE_APPOINTMENTS_RECONNECTION_ELEC
+
+  """
+  Standard of performance (electricity failure to switch in 15 working days)
+  """
+  STANDARDS_OF_PERFORMANCE_LATE_SWITCH_ELEC
+
+  """Single rate RMI"""
+  SINGLE_RATE_RMI
+
+  """Standard of performance (gas standard visit)"""
+  STANDARDS_OF_PERFORMANCE_APPOINTMENTS_STANDARD_VISIT_GAS
+
+  """Standard of performance (gas faulty meter resolution overdue)"""
+  STANDARDS_OF_PERFORMANCE_APPOINTMENTS_FAULTY_METER_GAS
+
+  """Standard of performance (gas prepay meter resolution overdue)"""
+  STANDARDS_OF_PERFORMANCE_APPOINTMENTS_PREPAY_METER_GAS
+
+  """Standard of performance (gas reconnection overdue)"""
+  STANDARDS_OF_PERFORMANCE_APPOINTMENTS_RECONNECTION_GAS
+
+  """Standard of performance (gas failure to switch in 15 working days)"""
+  STANDARDS_OF_PERFORMANCE_LATE_SWITCH_GAS
+
+  """Standard of performance (final bill refund overdue)"""
+  STANDARDS_OF_PERFORMANCE_REFUND_ISSUED_LATE
+
+  """Standard of performance (final bill overdue)"""
+  STANDARDS_OF_PERFORMANCE_FINAL_BILL_ISSUED_LATE
+
+  """Additional SoP payment (appointments)"""
+  ADDITIONAL_SOP_PAYMENT_APPOINTMENTS
+
+  """Payment - Auspost"""
+  PAYMENT_AUSPOST
+
+  """Payment - IVR"""
+  PAYMENT_IVR
+
+  """Payment - EAPA Voucher"""
+  PAYMENT_EAPA_VOUCHER
+
+  """Payment - Cheque"""
+  PAYMENT_CHEQUE
+
+  """Payment - BPAY"""
+  PAYMENT_BPAY
+
+  """Payment - Credit Card"""
+  PAYMENT_CREDIT_CARD
+
+  """Payment - Centrepay"""
+  PAYMENT_CENTREPAY
+
+  """Payment - Bank Account"""
+  PAYMENT_BANK_ACCOUNT
+
+  """Payment - Transfer from SAP"""
+  PAYMENT_TRANSFER_FROM_SAP
+
+  """NSW family energy rebate"""
+  NSW_FAMILY_ENERGY_REBATE
+
+  """NSW Gvt Household rebate (Inc GST)"""
+  NSW_GOVERNMENT_HOUSEHOLD_REBATE
+
+  """NSW government life support rebate"""
+  NSW_GOVERNMENT_LIFE_SUPPORT_REBATE
+
+  """NSW medical energy rebate"""
+  NSW_MEDICAL_ENERGY_REBATE
+
+  """QLD Government Electricity Rebate"""
+  QLD_GOVERNMENT_ELECTRICITY_REBATE
+
+  """QLD Asset Ownership Dividend"""
+  QLD_ASSET_OWNERSHIP_DIVIDEND
+
+  """SME reversed pre-migration charge"""
+  SME_REVERSED_PRE_MIGRATION_CHARGE
+}
+
+type AccountCreditMetadataType {
+  """"""
+  data: JSONString!
+
+  """"""
+  updatedAt: DateTime!
+}
+
+"""The input type for the account credit."""
+input CreateAccountCreditInput {
+  """The account number."""
+  accountNumber: String!
+
+  """The net amount of the credit to be created."""
+  netAmount: Int!
+
+  """The gross amount of the credit to be created."""
+  grossAmount: Int!
+
+  """The sales tax amount of the credit to be created."""
+  salesTaxAmount: Int!
+
+  """Any extra data that will be associated with account credit."""
+  metadata: JSONString
+
+  """Optional short note about account credit."""
+  note: String
+
+  """The reason why the credit is added to the account."""
+  reason: AccountCreditReasonType!
+}
+
+"""
+
+    Please note: these labels are exposed in the API documentation.
+    
+"""
+enum AccountCreditReasonType {
+  """External referral credit"""
+  EXTERNAL_REFERRAL_CREDIT
+}
+
+"""Add charges to an account."""
+type CreateAccountCharge {
+  accountCharge: AccountChargeType
+}
+
+type AccountChargeType {
+  """"""
+  id: ID!
+
+  """"""
+  grossAmount: Int!
+
+  """Climate change levy"""
+  cclAmount: Int!
+
+  """"""
+  netAmount: Int
+
+  """"""
+  salesTaxAmount: Int
+
+  """"""
+  reason: AccountChargeReason
+
+  """"""
+  note: String!
+  metadata: AccountChargeMetadataType
+}
+
+"""An enumeration."""
+enum AccountChargeReason {
+  """Balance transfer"""
+  BALANCE_TRANSFER
+
+  """SOLR balance transfer"""
+  SOLR_BALANCE_TRANSFER
+
+  """Balance transfer"""
+  DATA_IMPORT_BALANCE_TRANSFER
+
+  """Balance transfer for final billed account"""
+  BALANCE_TRANSFER_FOR_FINAL_BILLED_ACCOUNT
+
+  """Imported charge"""
+  IMPORTED_CHARGE
+
+  """Supplementary ledger balance transfer"""
+  SUPPLEMENTARY_LEDGER_BALANCE_TRANSFER
+
+  """Incorrect payment reversal"""
+  INCORRECT_PAYMENT_REVERSAL
+
+  """Refund"""
+  REFUND
+
+  """Reversed credit"""
+  REVERSED_ACCOUNT_CREDIT
+
+  """Outgoing Balance Transfer"""
+  OUTGOING_BALANCE_TRANSFER
+
+  """Adjusted credit to allow refund"""
+  ADJUSTED_CREDIT_TO_ALLOW_REFUND
+
+  """AC Adjustment"""
+  AC_ADJUSTMENT
+
+  """Nest Learning Thermostat rental"""
+  NEST_LEARNING_THERMOSTAT_RENTAL
+
+  """Business advance payment"""
+  BUSINESS_ADVANCE_PAYMENT
+
+  """Prepay balance adjustment"""
+  PREPAY_BALANCE_ADJUSTMENT
+
+  """Feed-in-Tariff payment transfer to nominated recipient"""
+  FEED_IN_TARIFF_PAYMENT_TRANSFER_TO_NOMINATED_RECIPIENT
+
+  """Service order"""
+  SERVICE_ORDER
+
+  """Custom"""
+  CUSTOM
+
+  """Automatic Reconciliation"""
+  AUTO_RECONCILIATION
+
+  """Default"""
+  DEFAULT
+
+  """Balance transfer for final billed account"""
+  BALANCE_TRANSFER_FOR_FINAL_BILLED_ACCOUNT_20
+
+  """Credit balance donated to charity"""
+  CREDIT_BALANCE_DONATED_TO_CHARITY
+
+  """Direct debit refund balancing"""
+  DIRECT_DEBIT_REFUND_BALANCING
+
+  """Metering Job: Business"""
+  METERING_JOB_BUSINESS
+
+  """Metering Job: National Grid"""
+  METERING_JOB_NATIONAL_GRID
+
+  """Metering Job: SMS"""
+  METERING_JOB_SMS
+
+  """Penalty charge"""
+  PENALTY_CHARGE
+
+  """Prepay debt adjustment"""
+  PREPAY_DEBT_ADJUSTMENT
+
+  """Business prepayment (deprecated)"""
+  BUSINESS_PREPAYMENT
+
+  """Write back"""
+  WRITE_BACK
+
+  """Early exit fee"""
+  EARLY_EXIT_FEE
+
+  """DCA charge"""
+  DCA_CHARGE
+
+  """Green Deal charge"""
+  GREEN_DEAL_CHARGE
+
+  """Water"""
+  WATER
+
+  """EV Charging: Roaming on the Electric Juice Network"""
+  EV_CHARGING
+}
+
+type AccountChargeMetadataType {
+  """"""
+  data: JSONString!
+
+  """"""
+  updatedAt: DateTime!
+}
+
+"""The input type for the account charge."""
+input CreateAccountChargeInput {
+  """The account number."""
+  accountNumber: String!
+
+  """The net amount of the charge to be added."""
+  netAmount: Int!
+
+  """The gross amount of the charge to be added."""
+  grossAmount: Int!
+
+  """The sales tax amount of the charge to be added."""
+  salesTaxAmount: Int!
+
+  """The climate change levy amount of the charge to be added."""
+  cclAmount: Int
+
+  """Any extra data that will be associated with account charge."""
+  metadata: JSONString
+
+  """Optional short note about account charge."""
+  note: String
+
+  """The reason why the charge is added to the account."""
+  reason: AccountChargeReasonType!
+}
+
+"""
+
+    Please note: these labels are exposed in the API documentation.
+    
+"""
+enum AccountChargeReasonType {
+  """Electric Vehicle Charging"""
+  ELECTRIC_VEHICLE_CHARGING
+}
+
+type FormSubmissionOuput {
+  id: Int
+  content: JSONString
+  errors: [SerializerFieldErrorsType]
+}
+
+type SerializerFieldErrorsType {
+  field: String
+  errors: [ErrorTypeUnion!]
+}
+
+union ErrorTypeUnion = SerializerErrorType | SerializerFieldErrorsType
+
+type SerializerErrorType {
+  message: String
+  code: String
+}
+
+input FormSubmissionInput {
+  """"""
+  accountNumber: String!
+
+  """Form type"""
+  formType: FormType
+
+  """Form content"""
+  content: JSONString!
+}
+
+"""An enumeration."""
+enum FormType {
+  """Covid-19 Financial Energy Assessment"""
+  COVID_19_FINANCIAL_ENERGY_ASSESSMENT
+}
+
+type EmailAuthentication {
+  token: String
+  errors: [ErrorType]
+}
+
+type APIKeyAuthentication {
+  token: String
+  errors: [ErrorType]
+}
+
+type MasqueradeAuthentication {
+  token: String
+  errors: [ErrorType]
+}
+
+"""
+Mutation to generate a pre-signed token.
+
+These pre-signed, expiring and opaque tokens will be swapped
+for a limited scope JWT (Kraken Token).
+"""
+type GeneratePreSignedToken {
+  token: String
+  tokenExpiryDatetime: DateTime
+  scope: PreSignedTokenScope
+}
+
+"""
+
+    Choices class for the pre-signed expiring tokens.
+
+    These choices must have a certain format:
+
+    {ACTION-VERB}_{DEFINING-NOUN}
+
+    They should start with an action verb. It should be a single word.
+    The action verb enables the account user to do the thing (defining noun)
+    that comes after the action verb. Together they represent a task.
+
+    The defining noun could be longer than a single word.
+    Preferably, it should be kept short and simple as much as possible.
+    
+"""
+enum PreSignedTokenScope {
+  """Scope that enables account user to submit meter readings."""
+  SUBMIT_METER_READINGS
+
+  """Scope that enables account user to submit customer feedback."""
+  SUBMIT_CUSTOMER_FEEDBACK
+
+  """Scope that enables account user to book smart meter appointments."""
+  BOOK_SMART_METER_APPOINTMENTS
+}
+
+"""
+Mutation to disable the token used to call this mutation. Requires a valid token
+for authentication to avoid a potential denial-of-service issue. The token used
+for authentication will be the token disabled.
+"""
+type DisableToken {
+  message: String
+}
+
+type RequestResetPasswordMutationPayload {
+  """"""
+  email: String!
+
+  """"""
+  isCreateMode: Boolean
+  errors: [ErrorType]
+  clientMutationId: String
+}
+
+input RequestResetPasswordMutationInput {
+  """"""
+  email: String!
+
+  """"""
+  isCreateMode: Boolean
+  clientMutationId: String
+}
+
+type ResetPasswordMutationPayload {
+  errors: [SerializerFieldErrorsType]
+  clientMutationId: String
+}
+
+input ResetPasswordMutationInput {
+  password: String!
+  userId: String!
+  token: String!
+  clientMutationId: String
+}
+
+"""Obtain JSON Web Token mutation"""
+type ObtainJSONWebToken {
+  payload: GenericScalar!
+  refreshExpiresIn: Int!
+  token: String!
+  refreshToken: String!
+}
+
+"""
+The `GenericScalar` scalar type represents a generic
+GraphQL scalar value that could be:
+String, Boolean, Int, Float, List or Object.
+"""
+scalar GenericScalar
+
+type Verify {
+  payload: GenericScalar!
+}
+
+type Refresh {
+  payload: GenericScalar!
+  refreshExpiresIn: Int!
+  token: String!
+  refreshToken: String!
+}
+
+"""
+The unifying approach used to get a Kraken token (JWT: JSON Web Token) with
+different types of input.
+
+The currently supported inputs are:
+- account user email/password combination
+- account user API key
+- organization live secret key
+- pre-signed key
+- refresh token
+"""
+type ObtainKrakenJSONWebToken {
+  token: String!
+  payload: GenericScalar!
+  refreshToken: String
+  refreshExpiresIn: Int!
+}
+
+"""The input type for obtaining a Kraken Token (JWT)."""
+input ObtainJSONWebTokenInput {
+  """Email address of the account user. Use with 'password' field."""
+  email: String
+
+  """Password of the account user. Use with 'email' field."""
+  password: String
+
+  """
+  API key of the account user. Use standalone, don't provide a second input field.
+  """
+  APIKey: String
+
+  """
+  Live secret key of an third-party organization. Use standalone, don't provide a second input field.
+  """
+  organizationSecretKey: String
+
+  """
+  Short-lived, temporary key (that's pre-signed). Use standalone, don't provide a second input field.
+  """
+  preSignedKey: String
+
+  """
+  The refresh token that can be used to extend the expiry claim of a Kraken token. Use standalone, don't provide a second input field.
+  """
+  refreshToken: String
+}
+
+type InvoiceType implements BillInterface {
+  id: ID
+  billType: BillTypeEnum
+  fromDate: Date
+  toDate: Date
+
+  """
+  Requesting this field generates a temporary URL at which bill is available.
+          This URL will expire after approximately an hour.  It is intended for redirection purposes,
+          NOT persistence in any form (e.g. inclusion in emails or the body of a web page).
+          This field can raise an error with errorClass NOT_FOUND if the bill document has not
+          been created/issued yet.
+  
+  
+          Expected `errorClass`:
+  - NOT_FOUND
+  - SERVICE_AVAILABILITY
+  """
+  temporaryUrl: String
+
+  """The date the bill was sent to the customer."""
+  issuedDate: Date
+}
+
+"""A payment from the customer to the energy supplier."""
+type Payment implements TransactionType {
+  id: ID
+  postedDate: Date
+
+  """Gross amount including tax whenever tax is payable."""
+  amount: Int
+
+  """
+  The customer's resulting balance in cents after this transaction has been applied.
+  """
+  balanceCarriedForward: Int
+
+  """Deprecated"""
+  isCredit: Boolean
+
+  """Deprecated"""
+  isAccountCharge: Boolean
+
+  """Deprecated"""
+  isAccountPayment: Boolean
+
+  """
+  Whether the statement this transaction is on has been held. A held statement is not sent to a customer automatically, but is instead marked for manual attention by operations staff.
+  """
+  isHeld: Boolean
+  title: String
+  statementId: ID
+}
+
+"""A refund to the customer from the energy supplier."""
+type Refund implements TransactionType {
+  id: ID
+  postedDate: Date
+
+  """Gross amount including tax whenever tax is payable."""
+  amount: Int
+
+  """
+  The customer's resulting balance in cents after this transaction has been applied.
+  """
+  balanceCarriedForward: Int
+
+  """Deprecated"""
+  isCredit: Boolean
+
+  """Deprecated"""
+  isAccountCharge: Boolean
+
+  """Deprecated"""
+  isAccountPayment: Boolean
+
+  """
+  Whether the statement this transaction is on has been held. A held statement is not sent to a customer automatically, but is instead marked for manual attention by operations staff.
+  """
+  isHeld: Boolean
+  title: String
+  statementId: ID
+}
+
+type Consumption {
+  startDate: Date
+  endDate: Date
+  quantity: Decimal
+  unit: String
+  usageCost: Int
+  supplyCharge: Int
+}
+
+"""A charge to the customer."""
+type Charge implements TransactionType {
+  id: ID
+  postedDate: Date
+
+  """Gross amount including tax whenever tax is payable."""
+  amount: Int
+
+  """
+  The customer's resulting balance in cents after this transaction has been applied.
+  """
+  balanceCarriedForward: Int
+
+  """Deprecated"""
+  isCredit: Boolean
+
+  """Deprecated"""
+  isAccountCharge: Boolean
+
+  """Deprecated"""
+  isAccountPayment: Boolean
+
+  """
+  Whether the statement this transaction is on has been held. A held statement is not sent to a customer automatically, but is instead marked for manual attention by operations staff.
+  """
+  isHeld: Boolean
+  title: String
+  statementId: ID
+
+  """
+  If this charge is for consumption of a good or service, this field will contain details of how much was consumed. Omitted in cases where the charge is not for consumption, or where consumption information is not available (e.g. for some older records).
+  """
+  consumption: Consumption
+}
+
+"""A credit to the customer from the energy retailer."""
+type Credit implements TransactionType {
+  id: ID
+  postedDate: Date
+
+  """Gross amount including tax whenever tax is payable."""
+  amount: Int
+
+  """
+  The customer's resulting balance in cents after this transaction has been applied.
+  """
+  balanceCarriedForward: Int
+
+  """Deprecated"""
+  isCredit: Boolean
+
+  """Deprecated"""
+  isAccountCharge: Boolean
+
+  """Deprecated"""
+  isAccountPayment: Boolean
+
+  """
+  Whether the statement this transaction is on has been held. A held statement is not sent to a customer automatically, but is instead marked for manual attention by operations staff.
+  """
+  isHeld: Boolean
+  title: String
+  statementId: ID
+}
+
+type PreKrakenBillType implements BillInterface {
+  id: ID
+  billType: BillTypeEnum
+  fromDate: Date
+  toDate: Date
+
+  """
+  Requesting this field generates a temporary URL at which bill is available.
+          This URL will expire after approximately an hour.  It is intended for redirection purposes,
+          NOT persistence in any form (e.g. inclusion in emails or the body of a web page).
+          This field can raise an error with errorClass NOT_FOUND if the bill document has not
+          been created/issued yet.
+  
+  
+          Expected `errorClass`:
+  - NOT_FOUND
+  - SERVICE_AVAILABILITY
+  """
+  temporaryUrl: String
+
+  """The date the bill was sent to the customer."""
+  issuedDate: Date
+  averageDailyUsage: Float
+  totalConsumption: Float
+  totalConsumptionCost: Float
+  totalSupplyCost: Float
+  totalFeedInEnergy: Float
+  totalFeedInCost: Float
+
+  """
+  Whether the bill has been reversed. Null will be returned if this information wasn't sent in through the data import pipeline.
+  """
+  isReversed: Boolean
+}
+
+type GasMeterPointType implements MeterPointInterface {
+  id: Int
+  meters(id: Int, includeInactive: Boolean): [GasMeterType]
+  status: String
+
+  """
+  Details about an enrolment of this meter point. Will be null if no enrolment is taking place.
+  """
+  enrolment: EnrolmentType
+  identifier: String
+
+  """The Financially Responsible Organisation status"""
+  supplyStatus: KrakenStatus
+
+  """
+  A list of agreements belonging to an account that is linked to the logged in user.
+  """
+  agreements(includeInactive: Boolean = true): [AgreementInterface]
+
+  """The fuel/service type for this meter point."""
+  supplyType: String
+
+  """The physical state of the meter point"""
+  energizationStatus: GasEnergizationStatus
+  distributor: ProviderType
+}
+
+type GasMeterType implements Meter {
+  id: ID!
+  serialNumber: String!
+
+  """"""
+  meterTypeSizeCode: String
+
+  """"""
+  kpaValue: Decimal
+
+  """"""
+  supplyPointIdentifier: String
+
+  """"""
+  currentReadDate: Date
+
+  """"""
+  currentReadPressureCorrectionFactor: Decimal
+
+  """"""
+  nextScheduledReadDate: Date
+
+  """"""
+  nextScheduledSpecialRead: Date
+
+  """"""
+  meterMultiplier: Decimal
+
+  """"""
+  activeFrom: DateTime
+
+  """"""
+  activeTo: DateTime
+
+  """The units of consumption for a smart meter."""
+  consumptionUnits: String
+
+  """Whether this meter requires a final change of tenancy (COT) reading."""
+  requiresCotFinalReading: Boolean
+
+  """Energy consumption recorded by the meter."""
+  consumption(
+    """Earliest consumption reading to return. Must specify a timezone."""
+    startAt: DateTime!
+
+    """Aggregate consumption according to this grouping."""
+    grouping: ConsumptionGroupings!
+
+    """Timezone to use for grouping."""
+    timezone: String!
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): ConsumptionConnection
+  status: GasMeterStatus
+  meterType: AusGasMeterType
+  installationType: GasMeterInstallationType
+  meterMeasurementUnit: GasMeterMeasurementUnit
+  meterReadFrequency: GasMeterReadFrequency
+
+  """
+   
+  Fetch consumption on this register, bucketed into time
+  slices of a variable granularity.
+  
+  Unlike `readingsSummary`, this endpoint returns
+  _consumption_; in particular, for accumulation meters, the
+  returned value represents the absolute amount of energy
+  consumed, rather than reading values.
+  
+  When the readings we have are less granular than the
+  requested granularity (e.g. half-hourly or even monthly
+  consumption requested on an interval meter), the consumption
+  is divided evenly.
+  
+  Note that, because the way that humans measure time is
+  weird, so too are the results of this endpoint. For
+  instance, a day may not have exactly 48 half-hour periods
+  (because a DST transition happened), and a three-month
+  interval of meter readings may not appear to be spread
+  evenly between months (because months have different numbers
+  of days).
+  
+  `startAt` and `endAt` must be no more than this number of
+  days apart:
+  
+  | Granularity used | Maximum request range |
+  |------------------|-----------------------|
+  | `HALF_HOURLY`    | 10 days               |
+  | `DAILY`          | 100 days              |
+  | `MONTHLY`        | 800 days              |
+   
+  
+   
+  
+  This field requires the `Authentication` header to be set. Search `Authentication` for more information.
+  
+  
+  """
+  consumptionSummary(
+    """
+    
+    Include data starting at this datetime.
+    
+    If a datetime-naïve value (without a UTC offset) is
+    passed, this will be assumed to be in the timezone
+    specified in ``timezone``; if the UTC offset is absent
+    and it is a time that occurs more than once in the given
+    timezone (e.g. 2am on a transition out of DST) the
+    behaviour is undefined.
+    
+    """
+    startAt: DateTime!
+
+    """
+    
+    Include data ending at this datetime. If a
+    datetime-naïve value (without a UTC offset) is passed,
+    this will be assumed to be in the timezone specified in
+    ``timezone``; if the UTC offset is absent and it is a
+    time that occurs more than once in the given timezone
+    (e.g. 2am on a transition out of DST) the behaviour
+    is undefined.
+    
+    """
+    endAt: DateTime!
+
+    """
+    Olson timezone identifier to use (e.g. `Australia/Melbourne`). This is used to determine what time of day to split days and months.
+    """
+    timezone: String!
+
+    """How granular the returned results should be"""
+    granularity: ConsumptionGranularity!
+  ): [SummarizedConsumptionType!]!
+  readings(includeQuarantined: Boolean = false, before: String, after: String, first: Int, last: Int): GasMeterReadingConnectionTypeConnection
+}
+
+"""An enumeration."""
+enum GasMeterStatus {
+  TURNED_ON
+  TURNED_OFF
+  PLUGGED
+  NO_METER
+}
+
+"""An enumeration."""
+enum AusGasMeterType {
+  GAS
+  HOT_WATER
+}
+
+"""An enumeration."""
+enum GasMeterInstallationType {
+  MASTER_METER
+  SUB_METER
+  ORDINARY
+}
+
+"""An enumeration."""
+enum GasMeterMeasurementUnit {
+  METRIC
+  IMPERIAL
+}
+
+"""An enumeration."""
+enum GasMeterReadFrequency {
+  BI_MONTHLY
+  DAILY
+  MONTHLY
+  QUARTERLY
+}
+
+"""
+
+
+This field is a connection type. Connections are used to implement [cursor based pagination](https://graphql.org/learn/pagination/#pagination-and-edges).
+
+
+"""
+type GasMeterReadingConnectionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [GasMeterReadingConnectionTypeEdge]!
+}
+
+"""
+A Relay edge containing a `GasMeterReadingConnectionType` and its cursor.
+"""
+type GasMeterReadingConnectionTypeEdge {
+  """The item at the end of the edge"""
+  node: GasMeterReadingType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+
+A reading from an Australian gas meter, as Kraken receives
+it from industry.
+
+"""
+type GasMeterReadingType {
+  """"""
+  id: ID!
+
+  """"""
+  meter: GasMeterType!
+
+  """"""
+  value: Decimal!
+
+  """"""
+  readAt: DateTime!
+
+  """"""
+  typeOfRead: ReadingTypeOfRead
+
+  """"""
+  reasonForRead: ReadingReasonForRead
+
+  """"""
+  volumeFlow: Decimal
+
+  """"""
+  gasMeterUnits: ReadingGasMeterUnits
+
+  """"""
+  averageHeatingValue: Decimal
+
+  """"""
+  pressureCorrectionFactor: Decimal
+
+  """"""
+  consumedEnergy: Decimal
+}
+
+"""An enumeration."""
+enum ReadingTypeOfRead {
+  """Actual"""
+  A
+
+  """Estimated"""
+  E
+
+  """Substituted"""
+  S
+
+  """Customer Own Read"""
+  C
+}
+
+"""An enumeration."""
+enum ReadingReasonForRead {
+  """Special Final Read"""
+  SRF
+
+  """Special Reference Read"""
+  SRR
+
+  """Special Account Investigation"""
+  SRA
+
+  """Special Disconnection"""
+  SRD
+
+  """Special Transfer Read"""
+  SRT
+
+  """Schedule Cycle Read"""
+  SCH
+
+  """Meter Installation Read"""
+  INI
+
+  """Meter Removed Read"""
+  REM
+
+  """Other Service Order"""
+  OSO
+
+  """Meter Data Verify"""
+  MDV
+}
+
+"""An enumeration."""
+enum ReadingGasMeterUnits {
+  """Metric"""
+  M
+
+  """Imperial"""
+  I
+}
+
+"""An enumeration."""
+enum GasEnergizationStatus {
+  Registered
+  Commissioned
+  Decommissioned
+  Deregistered
+  Unclaimed
+}
+
+type ProviderType {
+  id: String!
+  shortName: String!
+  longName: String!
+  displayName: String!
+  emergencyPhoneNumber: String!
+  outagePhoneNumber: String
+}
+
+type GasAgreementType implements AgreementInterface {
+  id: Int
+  validFrom: DateTime
+  validTo: DateTime
+
+  """"""
+  agreedAt: DateTime
+
+  """"""
+  terminatedAt: DateTime
+  agreedFrom: DateTime
+  agreedTo: DateTime
+  isRevoked: Boolean
+  product: Product
+  supplyType: String
+  isActive: String
+  meterPoint: GasMeterPointType
+}
+
+"""
+Product rates for electricyrty may be matched to registers using the network tariff code and time of day.
+"""
+type ElectricityRateType implements RateInterface {
+  currency: String
+  bandCategory: String
+
+  """Unit cost before tax."""
+  rateExcludingTax: Float!
+
+  """Unit cost including tax."""
+  rateIncludingTax: Float!
+
+  """Description that will show up on the customer's bill"""
+  rateDescription: String
+  validFrom: DateTime
+  validTo: DateTime
+
+  """Accumulation meters use the `ALLDAY` product rates."""
+  timeOfDay: String
+
+  """Matches the Network Tariff Codes published by each LNSP."""
+  networkTariffCode: String
+
+  """Description for the network tariff code"""
+  chargeDescription: String
+}
+
+"""Product rates for gas."""
+type GasRateType implements RateInterface {
+  currency: String
+  bandCategory: String
+
+  """Unit cost before tax."""
+  rateExcludingTax: Float!
+
+  """Unit cost including tax."""
+  rateIncludingTax: Float!
+
+  """Description that will show up on the customer's bill"""
+  rateDescription: String
+  validFrom: DateTime
+  validTo: DateTime
+  pricingZone: PricingZone
+}
+
+"""An enumeration."""
+enum PricingZone {
+  ACTEWAGL
+  ADELAIDE
+  AGLNORTH
+  AGLNSW
+  AGLSOUTH
+  ALBURY
+  ALICESPNGS
+  APTALLGAS
+  BRISNORTH
+  COOMABOMBA
+  DARWIN
+  HHOLCWALLA
+  MIDWSOUTHW
+  MILDURA
+  MTGAMBIER
+  MURYVALLEY
+  OEBRNSDALE
+  OEMETRO
+  OEMURVLYV
+  OENORTH
+  OESTHEAST
+  OEWGPLAND
+  OEYRVALLEY
+  PORTPIRIE
+  QLDNORTH
+  RIVERLAND
+  TAMWORTH
+  TEMORA
+  TRUCENTRAL
+  TRUEAST
+  TRURCBARWN
+  TRURULWEST
+  TRUWEST
+  TUMUTGUNDA
+  WAGGAURANQ
+  WHYALLA
+  WIDEBAY
+}
